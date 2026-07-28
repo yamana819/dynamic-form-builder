@@ -2,7 +2,6 @@ using Microsoft.Data.SqlClient;
 using System.Data;
 using System.Text.RegularExpressions;
 using System.Security;
-using System.Xml;
 
 namespace DynamicFormBuilder.API.Data.Helpers
 {
@@ -15,7 +14,7 @@ namespace DynamicFormBuilder.API.Data.Helpers
             _connectionString = configuration.GetConnectionString("DefaultConnection")
             ?? throw new ArgumentNullException("DefaultConnection","Appsettings.json içerisinde bağlantı dizeciği bulunamadı!");//Eğer DefaultConnectionum boşsa veya yoksa hata fırlattık.    
         }
-        //Sql injection için regex ve boş identifier kontrolleri.
+        //Sql injectiondan korunmak için regex ve boş identifier kontrolleri.
         private string SanitizeIdentifier(string identifier)
         {
             if (string.IsNullOrWhiteSpace(identifier))
@@ -87,28 +86,32 @@ namespace DynamicFormBuilder.API.Data.Helpers
             string query = $"INSERT INTO {checkedTableName} ({columnString}) VALUES ({parametersString})";//Joinlediğimiz stringlerle query oluşturuyoruz
             return await ExecuteNonQueryAsync(query,parameters.ToArray());//params bizden array istediği için arraye dönüştürdük.
         }
-        public async Task<int> UpdateRecordFromJson(string tableName,UniqueId pk_id,string targetPK,Dictionary<String,object> formData)
+        //Kullanıcı recordlarda değişiklik yapmak istediğinde ilgili form sayfasına yönlendirilecek gerekli update işlemleri için metod yazıyoruz.
+        //tableName ve targetPkName ilgili form şemasıyla birlikte databasedeki form tablosunda bulunacak ve bu parametreler ordan alınacak.
+        //targetPKName kayıtların tutulacağı tablonun Primary Key kolonunun ismini tutar.
+        public async Task<int> UpdateRecordFromJson(string tableName,Guid id,string targetPKName,Dictionary<String,object> formData)
         {
             if (formData==null || formData.Count == 0)
             {
                 throw new ArgumentNullException("formdata","Form verisi boş.");
             }
             string checkedTableName = SanitizeIdentifier(tableName);
-            string checkedTargetPK = SanitizeIdentifier(targetPK); //Regex ve boş kontrolünden geçirmek ve çakışma önlemek için([]) SanitizeIdentifierimizi kullandık.
+            string checkedPKName = SanitizeIdentifier(targetPKName);//Primary key ismini de regex kontrollerinden geçiriyoruz.
             List<String> setClauses = [];
-            List<SqlParameter> parameters = [];//ExecuteNonQueryAsync metodumuz Sql parametreleri aldığı için onları da bu listede tutuyoruz.
+            List<SqlParameter> parameters = [];
             formData.ToList().ForEach((item) =>
             {
-                string checkedColumnName = SanitizeIdentifier(item.Key);//Aynı şekilde keylerimizi de regex kontrolünden geçiriyoruz.
+                string checkedColumnName = SanitizeIdentifier(item.Key);
                 string parameterName = $"@{item.Key}";
                 setClauses.Add($"{checkedColumnName}={parameterName}");
                 object parameterValue = item.Value ?? DBNull.Value;
                 parameters.Add(new SqlParameter(parameterName,parameterValue));
             });
             string setClausesString = string.Join(",",setClauses);
-            string targetPrimaryKey=$"@{targetPK}";
-            string query = $"UPDATE {checkedTableName} SET {setClausesString} WHERE {targetPK} = {pk_id} ";//Joinlediğimiz stringlerle query oluşturuyoruz
-            return await ExecuteNonQueryAsync(query,parameters.ToArray());//params bizden array istediği için arraye dönüştürdük.
+            string pkParameterName=$"@{targetPKName}";
+            parameters.Add(new SqlParameter(pkParameterName,id));
+            string query = $"UPDATE {checkedTableName} SET {setClausesString} WHERE {checkedPKName} = {pkParameterName} ";//Update için dinamik query.
+            return await ExecuteNonQueryAsync(query,parameters.ToArray());
         }
     }
 }
