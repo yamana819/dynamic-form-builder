@@ -9,7 +9,7 @@ GO
 
 CREATE TABLE [user] (
     user_id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWSEQUENTIALID(),
-    user_name NVARCHAR(50) UNIQUE NOT NULL,
+    user_name NVARCHAR(150) UNIQUE NOT NULL,
     role_id TINYINT NOT NULL DEFAULT 1,
     user_start_date DATETIME DEFAULT GETDATE(),
     password_hash NVARCHAR(255) NOT NULL,
@@ -19,7 +19,7 @@ CREATE TABLE [user] (
 
 CREATE TABLE form_group (
     form_group_id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWSEQUENTIALID(),
-    form_group_name NVARCHAR(50) UNIQUE NOT NULL,
+    form_group_name NVARCHAR(150) UNIQUE NOT NULL,
     created_at DATETIME DEFAULT GETDATE(),
     last_update DATETIME NULL,
     is_deleted BIT DEFAULT 0
@@ -27,11 +27,11 @@ CREATE TABLE form_group (
 
 CREATE TABLE form (
     form_id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWSEQUENTIALID(),
-    form_name NVARCHAR(50) NOT NULL,
+    form_name NVARCHAR(150) NOT NULL,
     form_group_id UNIQUEIDENTIFIER NOT NULL,
-    target_table_name NVARCHAR(50),
-    target_primary_key NVARCHAR(50),
-    view_name NVARCHAR(50),
+    target_table_name NVARCHAR(128),
+    target_primary_key NVARCHAR(128),
+    view_name NVARCHAR(128),
     created_at DATETIME DEFAULT GETDATE(),
     last_update DATETIME DEFAULT NULL,
     is_deleted BIT DEFAULT 0,
@@ -40,7 +40,7 @@ CREATE TABLE form (
 
 CREATE TABLE [role] (
     role_id TINYINT PRIMARY KEY IDENTITY(1,1),
-    role_name NVARCHAR(100) UNIQUE NOT NULL
+    role_name NVARCHAR(150) UNIQUE NOT NULL
 );
 
 CREATE TABLE [authorization] (
@@ -56,7 +56,7 @@ CREATE TABLE [authorization] (
 CREATE TABLE menu (
     menu_id INT PRIMARY KEY IDENTITY(1,1),
     parent_menu_id INT DEFAULT NULL,
-    menu_name NVARCHAR(50),
+    menu_name NVARCHAR(155),
     display_order INT,
     href NVARCHAR(255)
 );
