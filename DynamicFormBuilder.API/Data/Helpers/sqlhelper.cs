@@ -7,7 +7,7 @@ namespace DynamicFormBuilder.API.Data.Helpers
 {
     public class SqlHelper
     {
-        private string _connectionString;//Veritabanı bağlantısını tutmak için bi field tanımladık.
+        private readonly string _connectionString;//Veritabanı bağlantısını tutmak için bi field tanımladık.
 
         public SqlHelper(IConfiguration configuration)
         {
@@ -154,6 +154,13 @@ namespace DynamicFormBuilder.API.Data.Helpers
             SqlParameter parameter = new SqlParameter(pkparameterName,id);
             string query = $"SELECT * FROM {checkedTableName} WHERE {checkedPkName} = {pkparameterName}";//Tek kayıt döndüren querymiz.
             return await ExecuteSingleRowAsync(query,parameter);
+        }
+        //Bütün kayıtları listeleyecek olan metodumuz.
+        public async Task<DataTable> GetAllRecordsAsync(string viewName)
+        {
+            string checkedTableName = SanitizeIdentifier(viewName);
+            string query = $"SELECT * FROM {checkedTableName}";
+            return await ExecuteDataTableAsync(query);
         }
     }
 }
