@@ -61,12 +61,40 @@ namespace DynamicFormBuilder.API.Data.Helpers
             dataTable.Load(reader);
             return dataTable;
         }
+        //Update yaparken formdaki ilgili alanlara verileri getirmemiz gerekecek.
+        //Bu yüzden tek bir kayıt döndüren sorguları çalıştırması için yardımcı metod yazıyoruz.
+        public async Task<Dictionary<string,object>> ExecuteSingleRowAsync(string query,params SqlParameter[] parameters)
+        {
+            if (string.IsNullOrEmpty(query))
+            {
+                throw new ArgumentNullException("query","Boş query gönderildi");
+            }
+            using var connection = new SqlConnection(_connectionString);
+            using var command = new SqlCommand(query,connection);
+            if (parameters!=null && parameters.Length != 0)
+            {
+                command.Parameters.AddRange(parameters);
+            }
+            await connection.OpenAsync();
+            using var reader = await command.ExecuteReaderAsync();
+            var dictionary = new Dictionary<string,object>();
+            if (await reader.ReadAsync()){
+                for (int i = 0; i < reader.FieldCount; i++)
+                {
+                    string columnName = reader.GetName(i);
+                    object value = reader.GetValue(i);
+                    dictionary[columnName]=value == DBNull.Value ? null:value; 
+                }
+                return dictionary;
+            }
+            return null;
+        }
         //Dinamik olarak gelen json verisine göre veritabanındaki tabloya veri yazacak olan metodumuz.
         public async Task<int> InsertRecordFromJson(string tableName,Dictionary<String,object> formData)
         {
             if (formData==null || formData.Count == 0)
             {
-                throw new ArgumentNullException("formdata","Form verisi boş.");
+                throw new ArgumentNullException("formData","Form verisi boş.");
             }
             string checkedTableName = SanitizeIdentifier(tableName); //Regex ve boş kontrolünden geçirmek ve çakışma önlemek için([]) SanitizeIdentifierimizi kullandık.
             List<String> columnNames = [];//Tablodaki attribute namelerimizi (user_name...) tutmak için bi List oluşturuyoruz.
@@ -86,10 +114,10 @@ namespace DynamicFormBuilder.API.Data.Helpers
             string query = $"INSERT INTO {checkedTableName} ({columnString}) VALUES ({parametersString})";//Joinlediğimiz stringlerle query oluşturuyoruz
             return await ExecuteNonQueryAsync(query,parameters.ToArray());//params bizden array istediği için arraye dönüştürdük.
         }
-        //Kullanıcı recordlarda değişiklik yapmak istediğinde ilgili form sayfasına yönlendirilecek gerekli update işlemleri için metod yazıyoruz.
+        //Kullanıcı recordlarda değişiklik yapmak istediğinde ilgili form sayfasına yönlendirilecek.Gerekli update işlemleri için metod yazıyoruz.
         //tableName ve targetPkName ilgili form şemasıyla birlikte databasedeki form tablosunda bulunacak ve bu parametreler ordan alınacak.
         //targetPKName kayıtların tutulacağı tablonun Primary Key kolonunun ismini tutar.
-        public async Task<int> UpdateRecordFromJson(string tableName,Guid id,string targetPKName,Dictionary<String,object> formData)
+        public async Task<int> UpdateRecordFromJson(string tableName,string targetPKName,Guid id,Dictionary<String,object> formData)
         {
             if (formData==null || formData.Count == 0)
             {
@@ -101,6 +129,10 @@ namespace DynamicFormBuilder.API.Data.Helpers
             List<SqlParameter> parameters = [];
             formData.ToList().ForEach((item) =>
             {
+                if (item.Key == targetPKName)
+                {
+                    return;
+                }
                 string checkedColumnName = SanitizeIdentifier(item.Key);
                 string parameterName = $"@{item.Key}";
                 setClauses.Add($"{checkedColumnName}={parameterName}");
@@ -112,6 +144,16 @@ namespace DynamicFormBuilder.API.Data.Helpers
             parameters.Add(new SqlParameter(pkParameterName,id));
             string query = $"UPDATE {checkedTableName} SET {setClausesString} WHERE {checkedPKName} = {pkParameterName} ";//Update için dinamik query.
             return await ExecuteNonQueryAsync(query,parameters.ToArray());
+        }
+        //Idye göre ilgili kaydı getiren metodumuz(güncelleme yapılırken formu doldurmak için kullanılacak).
+        public async Task<Dictionary<string,object>> GetRecordByIdAsync(string tableName,string targetPkName ,Guid id)
+        {
+            string checkedTableName = SanitizeIdentifier(tableName);
+            string checkedPkName = SanitizeIdentifier(targetPkName);
+            string pkparameterName =$"@{targetPkName}";
+            SqlParameter parameter = new SqlParameter(pkparameterName,id);
+            string query = $"SELECT * FROM {checkedTableName} WHERE {checkedPkName} = {pkparameterName}";//Tek kayıt döndüren querymiz.
+            return await ExecuteSingleRowAsync(query,parameter);
         }
     }
 }
