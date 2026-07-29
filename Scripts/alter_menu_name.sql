@@ -1,0 +1,5 @@
+USE DynamicFormBuilderDB
+GO
+
+ALTER TABLE menu 
+ALTER COLUMN menu_name NVARCHAR(155) NOT NULL;
