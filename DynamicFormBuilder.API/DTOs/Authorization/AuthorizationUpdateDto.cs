@@ -4,8 +4,9 @@ namespace DynamicFormBuilder.API.DTOs.Authorization;
 
 public class AuthorizationUpdateDto
 {
+    [Required(ErrorMessage = "Menü belirtilmesi zorunludur.")]
     [Range(1, int.MaxValue,ErrorMessage = "Geçerli bir menü seçilmelidir.")]
-    public int? MenuId { get; set; }
+    public int MenuId { get; set; }
 
     public bool? CanView { get; set; }
 

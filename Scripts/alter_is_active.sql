@@ -18,3 +18,6 @@ GO
 
 ALTER TABLE [user] ADD CONSTRAINT DF_User_IsDeleted DEFAULT 0 FOR is_deleted;
 GO
+
+ALTER TABLE [user] ALTER COLUMN is_deleted BIT NOT NULL;
+GO
