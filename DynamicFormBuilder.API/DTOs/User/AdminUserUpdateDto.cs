@@ -12,6 +12,6 @@ public class AdminUserUpdateDto
     [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$", ErrorMessage = "Şifre en az bir büyük harf, bir küçük harf ve bir rakam içermelidir.")]
     public string? Password { get; set; }
 
-    public bool? IsActive { get; set; }
+    public bool? IsDeleted { get; set; }
 
 }

@@ -8,10 +8,10 @@ public class UserResponseDto
 
     public string UserName { get; set; } = null!;
 
-    public bool? IsActive { get; set; }
+    public bool? IsDeleted { get; set; }
 
     public string RoleName {get;set;} = null!;
-    
+
 }
 
 public class AdminUserResponseDto:UserResponseDto

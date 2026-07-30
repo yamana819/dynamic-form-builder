@@ -1,14 +1,15 @@
 using System.ComponentModel.DataAnnotations;
 
+
 namespace DynamicFormBuilder.API.DTOs.Form;
 
-public class FormCreeateDto
+
+public class FormUpdateDto
 {
 
-    [Required(ErrorMessage = "Form adı girilmesi zorunludur.")]
     [StringLength(150,MinimumLength = 6,ErrorMessage = "Form ismi en az 6 en fazla 150 karakterden oluşmalıdır.")]
     [RegularExpression(@"^[a-zA-Z0-9\.\-_çÇğĞıİöÖşŞüÜ]+$", ErrorMessage = "Form  adı sadece harf, rakam veya (.,-,_) karakterlerini içerebilir. Boşluk içeremez.")]
-    public string FormName { get; set; } = null!;
+    public string? FormName { get; set; } 
 
     public string? TargetTableName { get; set; }
 
@@ -16,9 +17,10 @@ public class FormCreeateDto
 
     public string? ViewName { get; set; }
 
-    [Required(ErrorMessage = "Form şeması zorunludur.")]
-    public string FormSchema { get; set; } = null!;
+    public string? FormSchema { get; set; }
 
-    public Guid FormGroupId { get; set; }
+    public Guid? FormGroupId { get; set; }
+
+    public bool? IsPublished { get; set; }
 
 }

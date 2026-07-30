@@ -82,6 +82,9 @@ public partial class DynamicFormBuilderDbContext : DbContext
             entity.Property(e => e.ViewName)
                 .HasMaxLength(128)
                 .HasColumnName("view_name");
+            entity.Property(e=> e.IsPublished)
+                .HasDefaultValue(false)
+                .HasColumnName("is_published");
 
             entity.HasOne(d => d.FormGroup).WithMany(p => p.Forms)
                 .HasForeignKey(d => d.FormGroupId)
@@ -165,9 +168,9 @@ public partial class DynamicFormBuilderDbContext : DbContext
             entity.Property(e => e.UserId)
                 .HasDefaultValueSql("(newsequentialid())")
                 .HasColumnName("user_id");
-            entity.Property(e => e.IsActive)
-                .HasDefaultValue(true)
-                .HasColumnName("is_active");
+            entity.Property(e => e.IsDeleted)
+                .HasDefaultValue(false)
+                .HasColumnName("is_deleted");
             entity.Property(e => e.PasswordHash)
                 .HasMaxLength(255)
                 .HasColumnName("password_hash");

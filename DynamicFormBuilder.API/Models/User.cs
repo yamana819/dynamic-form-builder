@@ -17,7 +17,7 @@ public partial class User
 
     public DateTime? UserLastActiveDate { get; set; }    
 
-    public bool? IsActive { get; set; }
+    public bool? IsDeleted { get; set; }
 
     public virtual Role Role { get; set; } = null!;
 }

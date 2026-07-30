@@ -26,4 +26,6 @@ public partial class Form
     public string FormSchema { get; set; } = null!;
 
     public virtual FormGroup FormGroup { get; set; } = null!;
+
+    public bool IsPublished {get;set;}
 }

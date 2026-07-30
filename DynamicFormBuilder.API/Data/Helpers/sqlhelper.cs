@@ -1,3 +1,7 @@
+/*Kayıt tabloları duruma göre oluşturulup sayısı artacağı için eğer onları EF Core DbContextiyle yönetmeye çalışırsak her yeni tabloda bir daha build
+almak zorunda kalırız bundan kaçınmak için bir SqlHelper metodu yazdık bu tablo ismine ve istenen sütun isimlerine göre 
+(Form şemasındaki json parselanarak elde edilecek) sorgu üreten bir SqlHelper yazdık*/
+
 using Microsoft.Data.SqlClient;
 using System.Data;
 using System.Text.RegularExpressions;
@@ -142,7 +146,7 @@ namespace DynamicFormBuilder.API.Data.Helpers
             string setClausesString = string.Join(",",setClauses);
             string pkParameterName=$"@{targetPKName}";
             parameters.Add(new SqlParameter(pkParameterName,id));
-            string query = $"UPDATE {checkedTableName} SET {setClausesString} WHERE {checkedPKName} = {pkParameterName} ";//Update için dinamik query.
+            string query = $"UPDATE {checkedTableName} SET {setClausesString} WHERE {checkedPKName} = {pkParameterName} AND is_deleted = 0";//Update için dinamik query.
             return await ExecuteNonQueryAsync(query,parameters.ToArray());
         }
         //Idye göre ilgili kaydı getiren metodumuz(güncelleme yapılırken formu doldurmak için kullanılacak).
@@ -152,7 +156,7 @@ namespace DynamicFormBuilder.API.Data.Helpers
             string checkedPkName = SanitizeIdentifier(targetPkName);
             string pkparameterName =$"@{targetPkName}";
             SqlParameter parameter = new SqlParameter(pkparameterName,id);
-            string query = $"SELECT * FROM {checkedTableName} WHERE {checkedPkName} = {pkparameterName}";//Tek kayıt döndüren querymiz.
+            string query = $"SELECT * FROM {checkedTableName} WHERE {checkedPkName} = {pkparameterName} AND is_deleted = 0";//Tek kayıt döndüren querymiz.
             return await ExecuteSingleRowAsync(query,parameter);
         }
         //Bütün kayıtları listeleyecek olan metodumuz.
