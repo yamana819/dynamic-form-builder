@@ -9,7 +9,7 @@ public class FormGroupResponseDto
 
     public string FormGroupName { get; set; } = null!;
 
-    public DateTime? CreatedAt { get; set; }
+    public DateTime CreatedAt { get; set; }
 
     public DateTime? LastUpdate { get; set; }
 

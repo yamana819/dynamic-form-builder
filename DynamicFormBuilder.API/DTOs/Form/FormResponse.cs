@@ -15,7 +15,7 @@ public class FormResponseDto
 
     public string? ViewName { get; set; }
 
-    public DateTime? CreatedAt { get; set; }
+    public DateTime CreatedAt { get; set; }
 
     public DateTime? LastUpdate { get; set; }
 

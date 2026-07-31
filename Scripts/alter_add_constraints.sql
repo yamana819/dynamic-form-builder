@@ -1,0 +1,11 @@
+USE DynamicFormBuilderDB;
+GO
+
+ALTER TABLE form 
+ALTER COLUMN created_at DATETIME NOT NULL;
+
+ALTER TABLE form_group
+ALTER COLUMN created_at DATETIME NOT NULL;
+
+ALTER TABLE [user] 
+ALTER COLUMN user_start_date DATETIME NOT NULL;

@@ -60,7 +60,8 @@ public partial class DynamicFormBuilderDbContext : DbContext
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime")
-                .HasColumnName("created_at");
+                .HasColumnName("created_at")
+                .ValueGeneratedOnAdd();
             entity.Property(e => e.FormGroupId).HasColumnName("form_group_id");
             entity.Property(e => e.FormName)
                 .HasMaxLength(150)
@@ -105,7 +106,8 @@ public partial class DynamicFormBuilderDbContext : DbContext
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime")
-                .HasColumnName("created_at");
+                .HasColumnName("created_at")
+                .ValueGeneratedOnAdd();
             entity.Property(e => e.FormGroupName)
                 .HasMaxLength(150)
                 .HasColumnName("form_group_name");
@@ -186,7 +188,8 @@ public partial class DynamicFormBuilderDbContext : DbContext
             entity.Property(e => e.UserStartDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime")
-                .HasColumnName("user_start_date");
+                .HasColumnName("user_start_date")
+                .ValueGeneratedOnAdd();
 
             entity.HasOne(d => d.Role).WithMany(p => p.Users)
                 .HasForeignKey(d => d.RoleId)

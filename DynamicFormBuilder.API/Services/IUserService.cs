@@ -5,19 +5,19 @@ namespace DynamicFormBuilder.API.Services;
 
 public interface IUserService
 {
-    Task<IEnumerable<AdminUserResponseDto>> GetAllUsersAsync();
+    Task<IEnumerable<AdminUserResponseDto>> GetAllUsersAsync(int pageNumber=1,int pageSize=50);
 
     Task<AdminUserResponseDto?> GetUserForAdminAsync(Guid userId);
 
-    Task<AdminUserResponseDto> UpdateUserForAdminAsync(Guid userId,AdminUserUpdateDto userInfo);
+    Task<AdminUserResponseDto?> UpdateUserForAdminAsync(Guid userId,AdminUserUpdateDto userInfo);
 
-    Task<UserResponseDto> GetUserAsync(Guid userId);
+    Task<UserResponseDto?> GetUserAsync(Guid userId);
 
-    Task<UserResponseDto> CreateUserAsync(UserCreateDto userInfo);
+    Task<UserResponseDto> CreateUserAsync(UserCreateDto dto);
 
-    Task<UserResponseDto> UpdateUserAsync(Guid userId,UserUpdateDto userInfo);
+    Task<UserResponseDto?> UpdateUserAsync(Guid userId,UserUpdateDto dto);
 
-    Task DeleteUserAsync(Guid userId);
+    Task<bool> DeleteUserAsync(Guid userId);
 
-    Task ChangePasswordAsync(Guid userId,UserChangePasswordDto dto);
+    Task<bool> ChangePasswordAsync(Guid userId,UserChangePasswordDto dto);
 }

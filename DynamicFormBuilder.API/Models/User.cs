@@ -11,7 +11,7 @@ public partial class User
 
     public byte RoleId { get; set; }
 
-    public DateTime? UserStartDate { get; set; }
+    public DateTime UserStartDate { get; set; }
 
     public string PasswordHash { get; set; } = null!;
 
