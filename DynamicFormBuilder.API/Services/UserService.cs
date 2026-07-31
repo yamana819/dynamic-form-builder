@@ -78,7 +78,7 @@ public class UserService : IUserService
         }
     }
 
-    private async Task ChangePasswordFromDto(User user,UserChangePasswordDto dto)
+    private void ChangePasswordFromDto(User user,UserChangePasswordDto dto)
     {
         var vertificationResult = _passwordHasher.VerifyHashedPassword(user,user.PasswordHash,dto.CurrentPassword);
         if (vertificationResult == PasswordVerificationResult.Failed)
@@ -93,7 +93,7 @@ public class UserService : IUserService
                     .Include(u => u.Role)
                     .Where(u => u.UserId == userId && !u.IsDeleted)
                     .AsNoTracking()
-                    .FirstOrDefaultAsync() ?? throw new ResourceNotFoundException("Şifre değişikliği sırasında kullanıcı bulunamadı.");
+                    .FirstOrDefaultAsync() ?? throw new ResourceNotFoundException("Kullanıcı bulunamadı.");
         return MapToDto(user);
     }
 
@@ -118,24 +118,19 @@ public class UserService : IUserService
         User? user = await _context.Users
                     .Include(u => u.Role)
                     .Where(u => u.UserId == userId && !u.IsDeleted)
-                    .FirstOrDefaultAsync() ?? throw new ResourceNotFoundException("Güncelleme sırasında kullanıcı bulunamadı..");
+                    .FirstOrDefaultAsync() ?? throw new ResourceNotFoundException("Güncelleme işlemi sırasında kullanıcı bulunamadı.");
         UpdateEntityFromDto(user,dto);
         await _context.SaveChangesAsync();
         return MapToDto(user);
     }
 
-    public async Task<bool> DeleteUserAsync(Guid userId)
+    public async Task DeleteUserAsync(Guid userId)
     {
         User? user = await _context.Users
                     .Where(u=> u.UserId == userId && !u.IsDeleted)
-                    .FirstOrDefaultAsync();
-        if (user == null)
-        {
-            return false;
-        }
+                    .FirstOrDefaultAsync() ?? throw new ResourceNotFoundException("Silme işlemi sırasında kullanıcı bulunamadı.");
         user.IsDeleted=true;
         await _context.SaveChangesAsync();
-        return true;
     }
      public async Task<IEnumerable<AdminUserResponseDto>> GetAllUsersAsync(int pageNumber=1,int pageSize=50)
     {
@@ -157,46 +152,30 @@ public class UserService : IUserService
                 .AsNoTracking()
                 .ToListAsync();
     }
-    public async Task<AdminUserResponseDto?> GetUserForAdminAsync(Guid userId)
+    public async Task<AdminUserResponseDto> GetUserForAdminAsync(Guid userId)
     {
         User? user = await _context.Users
                 .Include(u=>u.Role)
                 .Where(u=>u.UserId==userId)
-                .FirstOrDefaultAsync();
-        if (user == null)
-        {
-            return null;
-        }
+                .FirstOrDefaultAsync() ?? throw new ResourceNotFoundException("Kullanıcı bulunamadı(ADMIN).");
         return MapToAdminDto(user);
     }
-    public async Task<AdminUserResponseDto?> UpdateUserForAdminAsync(Guid userId,AdminUserUpdateDto dto)
+    public async Task<AdminUserResponseDto> UpdateUserForAdminAsync(Guid userId,AdminUserUpdateDto dto)
     {
         User? user = await _context.Users
                     .Where(u=>u.UserId==userId)
                     .Include(u=>u.Role)
-                    .FirstOrDefaultAsync();
-        if (user == null)
-        {
-            return null;
-        }
+                    .FirstOrDefaultAsync() ?? throw new ResourceNotFoundException("Güncelleme işlemi sırasında kullanıcı bulunamadı(ADMIN)");
         AdminUpdateEntityFromDto(user,dto);
         await _context.SaveChangesAsync();
         return MapToAdminDto(user);
     }
-    public async Task<bool> ChangePasswordAsync(Guid userId,UserChangePasswordDto dto)
+    public async Task ChangePasswordAsync(Guid userId,UserChangePasswordDto dto)
     {
         User? user = await _context.Users
                     .Where(u=>u.UserId==userId && !u.IsDeleted)
-                    .FirstOrDefaultAsync();
-        if (user == null)
-        {
-            return false;
-        }
-        if (!ChangePasswordFromDto(user, dto))
-        {
-            return false;
-        }
+                    .FirstOrDefaultAsync() ?? throw new ResourceNotFoundException("Şifre değişikliği işlemi sırasında kullanıcı bulunamadı."); 
+        ChangePasswordFromDto(user,dto);
         await _context.SaveChangesAsync();
-        return true;
     }
 }
