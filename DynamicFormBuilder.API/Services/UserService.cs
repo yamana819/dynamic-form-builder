@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using DynamicFormBuilder.API.DTOs.User;
 using DynamicFormBuilder.API.Constants;
 using Microsoft.EntityFrameworkCore;
+using DynamicFormBuilder.API.Exceptions;
 
 namespace DynamicFormBuilder.API.Services;
 
@@ -77,37 +78,33 @@ public class UserService : IUserService
         }
     }
 
-    private bool ChangePasswordFromDto(User user,UserChangePasswordDto dto)
+    private async Task ChangePasswordFromDto(User user,UserChangePasswordDto dto)
     {
         var vertificationResult = _passwordHasher.VerifyHashedPassword(user,user.PasswordHash,dto.CurrentPassword);
         if (vertificationResult == PasswordVerificationResult.Failed)
         {
-            return false;
-        }
-        if (string.IsNullOrWhiteSpace(dto.Password))
-        {
-            return false;
+            throw new BadRequestException("Eski şifrenizi yanlış girildi.");
         }
         user.PasswordHash=_passwordHasher.HashPassword(user,dto.Password);
-        return true;
     }
-    public async Task<UserResponseDto?> GetUserAsync(Guid userId)
+    public async Task<UserResponseDto> GetUserAsync(Guid userId)
     {
         User? user = await _context.Users
-                    .Include(u=>u.Role)
-                    .Where(u=>u.UserId==userId && !u.IsDeleted)
+                    .Include(u => u.Role)
+                    .Where(u => u.UserId == userId && !u.IsDeleted)
                     .AsNoTracking()
-                    .FirstOrDefaultAsync();
-        if (user == null)
-        {
-            return null;
-        }
+                    .FirstOrDefaultAsync() ?? throw new ResourceNotFoundException("Şifre değişikliği sırasında kullanıcı bulunamadı.");
         return MapToDto(user);
     }
 
     public async Task<UserResponseDto> CreateUserAsync(UserCreateDto userInfo)
     {
-        User dummyUser = new User();
+        bool userExists = await _context.Users.AnyAsync(u => u.UserName == userInfo.UserName);
+        if (userExists)
+        {
+            throw new ConflictException($"'{userInfo.UserName}' kullanıcı adı zaten kullanılıyor.");
+        }
+        User dummyUser = new();
         string hashedPassword = _passwordHasher.HashPassword(dummyUser,userInfo.Password);
         User user = MapToUser(userInfo,hashedPassword);
         _context.Users.Add(user);
@@ -116,16 +113,12 @@ public class UserService : IUserService
         return MapToDto(user);
     }
 
-    public async Task<UserResponseDto?> UpdateUserAsync(Guid userId,UserUpdateDto dto)
+    public async Task<UserResponseDto> UpdateUserAsync(Guid userId,UserUpdateDto dto)
     {
         User? user = await _context.Users
-                    .Include(u=>u.Role)
-                    .Where(u=> u.UserId==userId && !u.IsDeleted)
-                    .FirstOrDefaultAsync();
-        if (user == null)
-        {
-            return null;
-        }
+                    .Include(u => u.Role)
+                    .Where(u => u.UserId == userId && !u.IsDeleted)
+                    .FirstOrDefaultAsync() ?? throw new ResourceNotFoundException("Güncelleme sırasında kullanıcı bulunamadı..");
         UpdateEntityFromDto(user,dto);
         await _context.SaveChangesAsync();
         return MapToDto(user);

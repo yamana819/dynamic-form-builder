@@ -7,17 +7,17 @@ public interface IUserService
 {
     Task<IEnumerable<AdminUserResponseDto>> GetAllUsersAsync(int pageNumber=1,int pageSize=50);
 
-    Task<AdminUserResponseDto?> GetUserForAdminAsync(Guid userId);
+    Task<AdminUserResponseDto> GetUserForAdminAsync(Guid userId);
 
-    Task<AdminUserResponseDto?> UpdateUserForAdminAsync(Guid userId,AdminUserUpdateDto userInfo);
+    Task<AdminUserResponseDto> UpdateUserForAdminAsync(Guid userId,AdminUserUpdateDto userInfo);
 
-    Task<UserResponseDto?> GetUserAsync(Guid userId);
+    Task<UserResponseDto> GetUserAsync(Guid userId);
 
     Task<UserResponseDto> CreateUserAsync(UserCreateDto dto);
 
-    Task<UserResponseDto?> UpdateUserAsync(Guid userId,UserUpdateDto dto);
+    Task<UserResponseDto> UpdateUserAsync(Guid userId,UserUpdateDto dto);
 
-    Task<bool> DeleteUserAsync(Guid userId);
+    Task DeleteUserAsync(Guid userId);
 
-    Task<bool> ChangePasswordAsync(Guid userId,UserChangePasswordDto dto);
+    Task ChangePasswordAsync(Guid userId,UserChangePasswordDto dto);
 }
