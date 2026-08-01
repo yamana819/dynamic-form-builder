@@ -13,15 +13,15 @@ public class UserService : IUserService
 {
     //Databaseden verileri çekmek için _context fieldi oluşturuyoruz.
     private readonly DynamicFormBuilderDbContext _context;
-    //Şifre hashleme işlemleri için _passwordHasher fieldi oluşturuyoruz.
+    //Şifre hashleme işlemleri için PasswordHassher objemizi tutacak _passwordHasher fieldi oluşturuyoruz.
     private readonly IPasswordHasher<User> _passwordHasher;
     public UserService(DynamicFormBuilderDbContext context,IPasswordHasher<User> passwordHasher)
     {
         _context=context;
         _passwordHasher=passwordHasher;
     }
-    //--2--
     // Buradaki private metodlarımızı DTO larımız ve Entitylerimiz arasında mappingleme yapmak için yazdık.
+    //UserCreateDto objesi olarak oluşturulan yeni kullanıcıyı User sınıfına mapliyoruz.
     private User MapToUser(UserCreateDto dto,string hashedPassword)
     {
         return new User
@@ -31,6 +31,7 @@ public class UserService : IUserService
             RoleId = DefaultValues.DefaultRoleId
         };
     }
+    //Frontende döndüreceğimiz bilgiler için user objesini User sınıfından UserResponseDtoya mapleyen metod.
     private UserResponseDto MapToDto(User user)
     {
         return new UserResponseDto
@@ -40,6 +41,7 @@ public class UserService : IUserService
             RoleName = user.Role.RoleName 
         };
     }
+    //Admin panelinde döndüreceğimiz kullanıcı bilgileri için AdminUserResponseDtoya mapleyen metod.
     private AdminUserResponseDto MapToAdminDto(User user)
     {
         return new AdminUserResponseDto
@@ -51,6 +53,8 @@ public class UserService : IUserService
             RoleName = user.Role.RoleName
         };
     }
+    //Admin kullanıcı üzerinde güncelleme yaparken gönderilen dtoyu Usera mapleyen metod.
+    //Güncelleme sırasında patch mantığı kullanacağımız için hepsine if kontrolü eklememiz gerekli.
     private void AdminUpdateEntityFromDto(User user,AdminUserUpdateDto dto)
     {
         if (!string.IsNullOrWhiteSpace(dto.UserName))
@@ -70,6 +74,7 @@ public class UserService : IUserService
             user.IsDeleted=dto.IsDeleted.Value;
         }
     }
+    //Kullanıcı bilgilerini güncellerken gönderilen dtoyu Usera mapleyen metod.
     private void UpdateEntityFromDto(User user,UserUpdateDto dto)
     {
         if (!string.IsNullOrWhiteSpace(dto.UserName))
@@ -77,7 +82,7 @@ public class UserService : IUserService
             user.UserName=dto.UserName;
         }
     }
-
+    //Şifre değişikliği sırasında gönderilen dtoyu kullanarak şifreyi değiştiren mapping metodu.
     private void ChangePasswordFromDto(User user,UserChangePasswordDto dto)
     {
         var vertificationResult = _passwordHasher.VerifyHashedPassword(user,user.PasswordHash,dto.CurrentPassword);
@@ -87,30 +92,29 @@ public class UserService : IUserService
         }
         user.PasswordHash=_passwordHasher.HashPassword(user,dto.Password);
     }
+    //======================================== 1 Normal Kullanıcı için CRUD işlemleri ===================================================
     public async Task<UserResponseDto> GetUserAsync(Guid userId)
     {
         User? user = await _context.Users
-                    .Include(u => u.Role)
+                    .Include(u => u.Role)//UserResponseDtomuzda RoleName alanı olduğu için ilgili kullanıcının RoleIdsinin Role tablosuna referansını da çekiyoruz.
                     .Where(u => u.UserId == userId && !u.IsDeleted)
-                    .AsNoTracking()
+                    .AsNoTracking()//Sadece okuma yapacağımız değişiklik yapmayacağımız için performansı artırmak amaçlı AsNoTracking eklendi.
                     .FirstOrDefaultAsync() ?? throw new ResourceNotFoundException("Kullanıcı bulunamadı.");
         return MapToDto(user);
     }
-
     public async Task<UserResponseDto> CreateUserAsync(UserCreateDto userInfo)
     {
-        bool userExists = await _context.Users.AnyAsync(u => u.UserName == userInfo.UserName);
+        bool userExists = await _context.Users.AnyAsync(u => u.UserName == userInfo.UserName);//Kullanıcı adının zaten var olup olmadığının kontrolü.
         if (userExists)
         {
             throw new ConflictException($"'{userInfo.UserName}' kullanıcı adı zaten kullanılıyor.");
         }
-        User dummyUser = new();
-        string hashedPassword = _passwordHasher.HashPassword(dummyUser,userInfo.Password);
+        string hashedPassword = _passwordHasher.HashPassword(null!,userInfo.Password);
         User user = MapToUser(userInfo,hashedPassword);
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
         await _context.Entry(user).Reference(u=>u.Role).LoadAsync();
-        return MapToDto(user);
+        return MapToDto(user);//Kullanıcıyı veritabanına kaydettikten sonra ResponseDtosu ile yeni kullanıcının bilgilerini de döndürüyoruz.
     }
 
     public async Task<UserResponseDto> UpdateUserAsync(Guid userId,UserUpdateDto dto)
@@ -132,6 +136,7 @@ public class UserService : IUserService
         user.IsDeleted=true;
         await _context.SaveChangesAsync();
     }
+    // ======================================== 2 Admin için CRUD işlemleri ve şifre değiştirme ===================================================
      public async Task<IEnumerable<AdminUserResponseDto>> GetAllUsersAsync(int pageNumber=1,int pageSize=50)
     {
         return await _context.Users
@@ -139,7 +144,7 @@ public class UserService : IUserService
                 .OrderBy(u=>u.UserId)
                 .Skip((pageNumber-1)*pageSize)
                 .Take(pageSize)
-                .Select(u=>new AdminUserResponseDto
+                .Select(u=>new AdminUserResponseDto//Select yazıldığında RoleName yazıldığı anda zaten Role tablosundan referans geliyor bu yüzden Include() gereksiz olduğu için sildim.
                 {
                     UserId=u.UserId,
                     UserName=u.UserName,
@@ -150,7 +155,7 @@ public class UserService : IUserService
                     IsDeleted=u.IsDeleted
                 })
                 .AsNoTracking()
-                .ToListAsync();
+                .ToListAsync();//Bütün kullanıcıları Selectle çektikten sonra AdminUserResponseDtolara bilgilerini yazıyoruz ve bir liste olarak dönüyoruz.
     }
     public async Task<AdminUserResponseDto> GetUserForAdminAsync(Guid userId)
     {

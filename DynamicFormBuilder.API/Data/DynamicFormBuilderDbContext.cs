@@ -68,6 +68,7 @@ public partial class DynamicFormBuilderDbContext : DbContext
                 .HasColumnName("form_name");
             entity.Property(e => e.FormSchema).HasColumnName("form_schema");
             entity.Property(e => e.IsDeleted)
+                .IsRequired()
                 .HasDefaultValue(false)
                 .HasColumnName("is_deleted");
             entity.Property(e => e.LastUpdate)
@@ -112,6 +113,7 @@ public partial class DynamicFormBuilderDbContext : DbContext
                 .HasMaxLength(150)
                 .HasColumnName("form_group_name");
             entity.Property(e => e.IsDeleted)
+                .IsRequired()
                 .HasDefaultValue(false)
                 .HasColumnName("is_deleted");
             entity.Property(e => e.LastUpdate)

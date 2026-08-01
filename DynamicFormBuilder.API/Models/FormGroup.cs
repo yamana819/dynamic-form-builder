@@ -13,7 +13,7 @@ public partial class FormGroup
 
     public DateTime? LastUpdate { get; set; }
 
-    public bool? IsDeleted { get; set; }
+    public bool IsDeleted { get; set; }
 
     public virtual ICollection<Form> Forms { get; set; } = new List<Form>();
 }

@@ -21,7 +21,7 @@ public partial class Form
 
     public DateTime? LastUpdate { get; set; }
 
-    public bool? IsDeleted { get; set; }
+    public bool IsDeleted { get; set; }
 
     public string FormSchema { get; set; } = null!;
 

@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace DynamicFormBuilder.API.DTOs.Form;
 
-public class FormCreeateDto
+public class FormCreateDto
 {
 
     [Required(ErrorMessage = "Form adı girilmesi zorunludur.")]

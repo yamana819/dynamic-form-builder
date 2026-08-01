@@ -66,8 +66,8 @@ namespace DynamicFormBuilder.API.Data.Helpers
             return dataTable;
         }
         //Update yaparken formdaki ilgili alanlara verileri getirmemiz gerekecek.
-        //Bu yüzden tek bir kayıt döndüren sorguları çalıştırması için yardımcı metod yazıyoruz.
-        public async Task<Dictionary<string,object>> ExecuteSingleRowAsync(string query,params SqlParameter[] parameters)
+        //Bu yüzden tek bir kayıt döndüren sorguları çalıştırması için yardımcı metod yazıyoruz bu metod bize kaydı bir dictionary olarak döndürecek.
+        public async Task<Dictionary<string,object>?> ExecuteSingleRowAsync(string query,params SqlParameter[] parameters)
         {
             if (string.IsNullOrEmpty(query))
             {
@@ -87,7 +87,7 @@ namespace DynamicFormBuilder.API.Data.Helpers
                 {
                     string columnName = reader.GetName(i);
                     object value = reader.GetValue(i);
-                    dictionary[columnName]=value == DBNull.Value ? null:value; 
+                    dictionary[columnName] = value == DBNull.Value ? null : value;
                 }
                 return dictionary;
             }
@@ -150,7 +150,7 @@ namespace DynamicFormBuilder.API.Data.Helpers
             return await ExecuteNonQueryAsync(query,parameters.ToArray());
         }
         //Idye göre ilgili kaydı getiren metodumuz(güncelleme yapılırken formu doldurmak için kullanılacak).
-        public async Task<Dictionary<string,object>> GetRecordByIdAsync(string tableName,string targetPkName ,Guid id)
+        public async Task<Dictionary<string,object>?> GetRecordByIdAsync(string tableName,string targetPkName ,Guid id)
         {
             string checkedTableName = SanitizeIdentifier(tableName);
             string checkedPkName = SanitizeIdentifier(targetPkName);
