@@ -6,7 +6,7 @@ namespace DynamicFormBuilder.API.Services;
 
 public interface IFormService
 {
-    Task<IEnumerable<FormResponseDto>> GetFormsByGroupAsync(Guid formGroupId);
+    Task<IEnumerable<FormResponseDto>> GetFormsByGroupAsync(Guid formGroupId,int pageNumber=1,int pageSize=50);
     
     Task<FormResponseDto> GetFormAsync(Guid formId);
 

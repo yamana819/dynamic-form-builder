@@ -36,7 +36,7 @@ public class FormGroupService : IFormGroupService
 
     private void UpdateEntityFromDto(FormGroup formGroup,FormGroupUpdateDto dto)
     {
-        if (!string.IsNullOrEmpty(dto.FormGroupName))
+        if (!string.IsNullOrEmpty(dto.FormGroupName) && (dto.FormGroupName!=formGroup.FormGroupName))
         {
             formGroup.FormGroupName=dto.FormGroupName;
             formGroup.LastUpdate=DateTime.UtcNow;

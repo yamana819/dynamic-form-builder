@@ -57,11 +57,11 @@ public class UserService : IUserService
     //Güncelleme sırasında patch mantığı kullanacağımız için hepsine if kontrolü eklememiz gerekli.
     private void AdminUpdateEntityFromDto(User user,AdminUserUpdateDto dto)
     {
-        if (!string.IsNullOrWhiteSpace(dto.UserName))
+        if (!string.IsNullOrWhiteSpace(dto.UserName) && (user.UserName!=dto.UserName))
         {
             user.UserName=dto.UserName;
         }
-        if (dto.RoleId.HasValue)
+        if (dto.RoleId.HasValue && (user.RoleId!=dto.RoleId))
         {
             user.RoleId=dto.RoleId.Value;
         }
@@ -69,7 +69,7 @@ public class UserService : IUserService
         {
             user.PasswordHash=_passwordHasher.HashPassword(user,dto.Password);
         }
-        if (dto.IsDeleted.HasValue)
+        if (dto.IsDeleted.HasValue && (user.IsDeleted!=dto.IsDeleted))
         {
             user.IsDeleted=dto.IsDeleted.Value;
         }
@@ -77,7 +77,7 @@ public class UserService : IUserService
     //Kullanıcı bilgilerini güncellerken gönderilen dtoyu Usera mapleyen metod.
     private void UpdateEntityFromDto(User user,UserUpdateDto dto)
     {
-        if (!string.IsNullOrWhiteSpace(dto.UserName))
+        if (!string.IsNullOrWhiteSpace(dto.UserName) && (user.UserName!=dto.UserName))
         {
             user.UserName=dto.UserName;
         }
