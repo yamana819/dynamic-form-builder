@@ -1,7 +1,6 @@
 using DynamicFormBuilder.API.Services;
 using Microsoft.AspNetCore.Mvc;
 using DynamicFormBuilder.API.DTOs.User;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace DynamicFormBuilder.API.Controllers
 {
@@ -17,7 +16,7 @@ namespace DynamicFormBuilder.API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUser(Guid id)
         {
-            UserResponseDto? user = await _userService.GetUserAsync(id);
+            UserResponseDto user = await _userService.GetUserAsync(id);
             return Ok(user);
         }
         [HttpPost]
@@ -29,7 +28,7 @@ namespace DynamicFormBuilder.API.Controllers
         [HttpPatch("{id}")]
         public async Task<IActionResult> UpdateUser(Guid id,UserUpdateDto dto)
         {
-            UserResponseDto? user = await _userService.UpdateUserAsync(id,dto);
+            UserResponseDto user = await _userService.UpdateUserAsync(id,dto);
             return Ok(user);
         }
         [HttpDelete("{id}")]

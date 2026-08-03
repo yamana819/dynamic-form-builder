@@ -20,8 +20,7 @@ public class FormGroupService : IFormGroupService
     {
         return new FormGroup
         {
-            FormGroupName=dto.FormGroupName,
-            LastUpdate=DateTime.UtcNow
+            FormGroupName=dto.FormGroupName
         };
     }
     private FormGroupResponseDto MapToDto(FormGroup form)
@@ -91,7 +90,7 @@ public class FormGroupService : IFormGroupService
         if (!string.IsNullOrEmpty(dto.FormGroupName) && dto.FormGroupName != formGroup.FormGroupName)
         {
             bool formGroupExists = await _context.FormGroups
-                .AnyAsync(f => f.FormGroupName == dto.FormGroupName && !f.IsDeleted);
+                .AnyAsync(f => f.FormGroupName == dto.FormGroupName);
             if (formGroupExists)
             {
                 throw new ConflictException($"'{dto.FormGroupName}' form grubu ismi zaten kullanılıyor.");

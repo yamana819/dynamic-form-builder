@@ -109,7 +109,8 @@ public class UserService : IUserService
         {
             throw new ConflictException($"'{dto.UserName}' kullanıcı adı zaten kullanılıyor.");
         }
-        string hashedPassword = _passwordHasher.HashPassword(null!,dto.Password);
+        User dummyUser = new User();
+        string hashedPassword = _passwordHasher.HashPassword(dummyUser,dto.Password);
         User user = MapToUser(dto,hashedPassword);
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
@@ -148,7 +149,6 @@ public class UserService : IUserService
      public async Task<IEnumerable<AdminUserResponseDto>> GetAllUsersAsync(int pageNumber=1,int pageSize=50)
     {
         return await _context.Users
-                .Where(u=> !u.IsDeleted)
                 .OrderBy(u=>u.UserId)
                 .Skip((pageNumber-1)*pageSize)
                 .Take(pageSize)
