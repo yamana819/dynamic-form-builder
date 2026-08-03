@@ -102,15 +102,15 @@ public class UserService : IUserService
                     .FirstOrDefaultAsync() ?? throw new ResourceNotFoundException("Kullanıcı bulunamadı.");
         return MapToDto(user);
     }
-    public async Task<UserResponseDto> CreateUserAsync(UserCreateDto userInfo)
+    public async Task<UserResponseDto> CreateUserAsync(UserCreateDto dto)
     {
-        bool userExists = await _context.Users.AnyAsync(u => u.UserName == userInfo.UserName);//Kullanıcı adının zaten var olup olmadığının kontrolü.
+        bool userExists = await _context.Users.AnyAsync(u => u.UserName == dto.UserName);//Kullanıcı adının zaten var olup olmadığının kontrolü.
         if (userExists)
         {
-            throw new ConflictException($"'{userInfo.UserName}' kullanıcı adı zaten kullanılıyor.");
+            throw new ConflictException($"'{dto.UserName}' kullanıcı adı zaten kullanılıyor.");
         }
-        string hashedPassword = _passwordHasher.HashPassword(null!,userInfo.Password);
-        User user = MapToUser(userInfo,hashedPassword);
+        string hashedPassword = _passwordHasher.HashPassword(null!,dto.Password);
+        User user = MapToUser(dto,hashedPassword);
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
         await _context.Entry(user).Reference(u=>u.Role).LoadAsync();
@@ -123,6 +123,14 @@ public class UserService : IUserService
                     .Include(u => u.Role)
                     .Where(u => u.UserId == userId && !u.IsDeleted)
                     .FirstOrDefaultAsync() ?? throw new ResourceNotFoundException("Güncelleme işlemi sırasında kullanıcı bulunamadı.");
+        if (!string.IsNullOrEmpty(dto.UserName) && user.UserName != dto.UserName)
+        {
+            bool userExists = await _context.Users.AnyAsync(u=>u.UserName==dto.UserName);
+            if (userExists)
+            {
+                throw new ConflictException($"'{dto.UserName}' kullanıcı adı zaten kullanılıyor.");
+            }
+        }
         UpdateEntityFromDto(user,dto);
         await _context.SaveChangesAsync();
         return MapToDto(user);
