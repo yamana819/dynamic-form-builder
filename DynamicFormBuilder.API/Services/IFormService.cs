@@ -15,4 +15,6 @@ public interface IFormService
     Task<FormResponseDto> UpdateFormAsync(Guid formId,FormUpdateDto dto);
 
     Task DeleteFormAsync(Guid formId);
+
+    Task<FormResponseDto> PublishFormAsync(Guid formId);
 }

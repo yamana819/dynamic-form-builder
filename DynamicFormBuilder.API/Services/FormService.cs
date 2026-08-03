@@ -2,7 +2,6 @@ using DynamicFormBuilder.API.Models;
 using DynamicFormBuilder.API.Data;
 using DynamicFormBuilder.API.DTOs.Form;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Http.HttpResults;
 using DynamicFormBuilder.API.Exceptions;
 
 namespace DynamicFormBuilder.API.Services;
@@ -163,7 +162,7 @@ public class FormService : IFormService
         await _context.SaveChangesAsync();
     }
 
-    public async Task PublishFormAsync(Guid formId)
+    public async Task<FormResponseDto> PublishFormAsync(Guid formId)
     {
         Form? form = await _context.Forms
                         .Where(f=>f.FormId==formId && !f.IsDeleted)
@@ -173,6 +172,8 @@ public class FormService : IFormService
             throw new BadRequestException("Formu yayımlamadan önce verilerin kaydedileceği tablo view ismi ve primary key ismi girmek zorunludur");
         }
         form.IsPublished=true;
+        form.LastUpdate=DateTime.UtcNow;
         await _context.SaveChangesAsync();
+        return MapToDto(form);
     }
 }
