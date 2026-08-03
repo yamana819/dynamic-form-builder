@@ -21,7 +21,7 @@ namespace DynamicFormBuilder.API.Controllers
             return Ok(forms);
         }
         [HttpGet("{formId}")]
-        public async Task<IActionResult> GetForms(Guid formId)
+        public async Task<IActionResult> GetForm(Guid formId)
         {
             FormResponseDto form = await _formService.GetFormAsync(formId);
             return Ok(form);
@@ -36,8 +36,15 @@ namespace DynamicFormBuilder.API.Controllers
         public async Task<IActionResult> UpdateForm(Guid formId,FormUpdateDto dto)
         {
             FormResponseDto form = await _formService.UpdateFormAsync(formId,dto);
-            return Ok(201);
+            return Ok(form);
         }
+        [HttpPatch("{formId}/publish-form")]
+        public async Task<IActionResult> PublishForm(Guid formId)
+        {
+            FormResponseDto form = await _formService.PublishFormAsync(formId);
+            return Ok(form);
+        }
+
         [HttpDelete("{formId}")]
         public async Task<IActionResult> DeleteForm(Guid formId)
         {
