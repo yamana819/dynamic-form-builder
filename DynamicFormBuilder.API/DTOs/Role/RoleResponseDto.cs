@@ -9,5 +9,4 @@ public class RoleResponseDto
 
     public string RoleName { get; set; } = null!;
 
-   public List<AuthorizationResponseDto>? Authorizations {get;set;}
 }

@@ -11,5 +11,4 @@ public class RoleCreateDto
     [StringLength(150,MinimumLength = 3,ErrorMessage ="Rol ismi en az 3 en fazla 150 karakter")]
     public string RoleName { get; set; } = null!;
 
-    public List<AuthorizationCreateDto>? Authorizations {get;set;}
 }
