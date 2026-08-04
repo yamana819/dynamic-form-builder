@@ -49,9 +49,9 @@ public class FormService : IFormService
         bool isUpdated = false;
         if (form.IsPublished)
         {
-            bool isTableChanged = !string.IsNullOrEmpty(dto.TargetTableName) && (dto.TargetTableName!=form.TargetTableName);
-            bool isPrimaryKeyChanged=!string.IsNullOrEmpty(dto.TargetPrimaryKey) && (dto.TargetPrimaryKey!=form.TargetPrimaryKey);
-            bool isSchemaChanged = !string.IsNullOrEmpty(dto.FormSchema) && (dto.FormSchema!=form.FormSchema);
+            bool isTableChanged = !string.IsNullOrWhiteSpace(dto.TargetTableName) && (dto.TargetTableName!=form.TargetTableName);
+            bool isPrimaryKeyChanged=!string.IsNullOrWhiteSpace(dto.TargetPrimaryKey) && (dto.TargetPrimaryKey!=form.TargetPrimaryKey);
+            bool isSchemaChanged = !string.IsNullOrWhiteSpace(dto.FormSchema) && (dto.FormSchema!=form.FormSchema);
             if (isTableChanged || isPrimaryKeyChanged || isSchemaChanged)
             {
                 throw new BadRequestException("Form yayımlandıktan sonra form şeması,tablo adı ve tablo primary key ismi değiştirilemez.");
@@ -140,7 +140,7 @@ public class FormService : IFormService
         Form? form = await _context.Forms
                         .Where(f=>f.FormId==formId && !f.IsDeleted)
                         .FirstOrDefaultAsync() ?? throw new ResourceNotFoundException("Güncelleme işlemi sırasında form bulunamadı.");
-        if (!string.IsNullOrEmpty(dto.FormName) && (dto.FormName != form.FormName))
+        if (!string.IsNullOrWhiteSpace(dto.FormName) && (dto.FormName != form.FormName))
         {
             bool formExists = await _context.Forms
                 .AnyAsync(f => f.FormName == dto.FormName);

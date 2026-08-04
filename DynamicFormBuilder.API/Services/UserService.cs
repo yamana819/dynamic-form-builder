@@ -124,7 +124,7 @@ public class UserService : IUserService
                     .Include(u => u.Role)
                     .Where(u => u.UserId == userId && !u.IsDeleted)
                     .FirstOrDefaultAsync() ?? throw new ResourceNotFoundException("Güncelleme işlemi sırasında kullanıcı bulunamadı.");
-        if (!string.IsNullOrEmpty(dto.UserName) && user.UserName != dto.UserName)
+        if (!string.IsNullOrWhiteSpace(dto.UserName) && user.UserName != dto.UserName)
         {
             bool userExists = await _context.Users.AnyAsync(u=>u.UserName==dto.UserName);
             if (userExists)

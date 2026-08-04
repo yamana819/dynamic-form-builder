@@ -33,7 +33,7 @@ namespace DynamicFormBuilder.API.Data.Helpers
         }
         //Tablo döndürmeyen sorgularımızı çalıştırmak için bu metodu kullanıyoruz ve etkilenen row sayısını return ediyoruz.
         public async Task<int> ExecuteNonQueryAsync(string query,params SqlParameter[] parameters) {
-            if (string.IsNullOrEmpty(query))
+            if (string.IsNullOrWhiteSpace(query))
             {
                 throw new ArgumentNullException("query","Boş query gönderildi.");
             }
@@ -49,7 +49,7 @@ namespace DynamicFormBuilder.API.Data.Helpers
         //Viewden veri okumak gibi tablo döndüren sorgularımızı çalıştırmak için bu metodu kullanıyoruz ve tabloyu return ediyoruz.
         public async Task<DataTable> ExecuteDataTableAsync(string query,params SqlParameter[] parameters)
         {
-            if (string.IsNullOrEmpty(query))
+            if (string.IsNullOrWhiteSpace(query))
             {
                 throw new ArgumentNullException("query","Boş query gönderildi");
             }
@@ -69,7 +69,7 @@ namespace DynamicFormBuilder.API.Data.Helpers
         //Bu yüzden tek bir kayıt döndüren sorguları çalıştırması için yardımcı metod yazıyoruz bu metod bize kaydı bir dictionary olarak döndürecek.
         public async Task<Dictionary<string,object>?> ExecuteSingleRowAsync(string query,params SqlParameter[] parameters)
         {
-            if (string.IsNullOrEmpty(query))
+            if (string.IsNullOrWhiteSpace(query))
             {
                 throw new ArgumentNullException("query","Boş query gönderildi");
             }

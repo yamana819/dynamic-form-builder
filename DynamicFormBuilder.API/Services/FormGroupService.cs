@@ -36,7 +36,7 @@ public class FormGroupService : IFormGroupService
 
     private void UpdateEntityFromDto(FormGroup formGroup,FormGroupUpdateDto dto)
     {
-        if (!string.IsNullOrEmpty(dto.FormGroupName) && (dto.FormGroupName!=formGroup.FormGroupName))
+        if (!string.IsNullOrWhiteSpace(dto.FormGroupName) && (dto.FormGroupName!=formGroup.FormGroupName))
         {
             formGroup.FormGroupName=dto.FormGroupName;
             formGroup.LastUpdate=DateTime.UtcNow;
@@ -87,7 +87,7 @@ public class FormGroupService : IFormGroupService
         FormGroup? formGroup = await _context.FormGroups
                             .Where(f=>f.FormGroupId==formGroupId && !f.IsDeleted)
                             .FirstOrDefaultAsync() ?? throw new ResourceNotFoundException("Güncelleme işlemi sırasında form grubu bulunamadı.");
-        if (!string.IsNullOrEmpty(dto.FormGroupName) && dto.FormGroupName != formGroup.FormGroupName)
+        if (!string.IsNullOrWhiteSpace(dto.FormGroupName) && dto.FormGroupName != formGroup.FormGroupName)
         {
             bool formGroupExists = await _context.FormGroups
                 .AnyAsync(f => f.FormGroupName == dto.FormGroupName);
