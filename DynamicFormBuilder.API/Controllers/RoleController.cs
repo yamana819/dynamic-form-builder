@@ -1,0 +1,51 @@
+using DynamicFormBuilder.API.Services;
+using Microsoft.AspNetCore.Mvc;
+using DynamicFormBuilder.API.DTOs;
+using DynamicFormBuilder.API.DTOs.Role;
+
+
+namespace DynamicFormBuilder.API.Controllers
+{
+    [ApiController]
+    [Route("/api/[controller]")]
+
+    public class RoleController : ControllerBase
+    {
+        private readonly IRoleService _roleService;
+        
+        public RoleController(IRoleService roleService)
+        {
+            _roleService=roleService;
+        }
+        [HttpGet]
+        public async Task<IActionResult> GetAllRoles([FromQuery] int pageNumber=1,[FromQuery] int pageSize=50)
+        {
+            IEnumerable<RoleResponseDto> roles = await _roleService.GetAllRolesAsync();
+            return Ok(roles);
+        }
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetRoleAsync(byte id)
+        {
+            RoleResponseDto role = await _roleService.GetRoleAsync(id);
+            return Ok(role);
+        }
+        [HttpPost]
+        public async Task<IActionResult> CreateRoleAsync(RoleCreateDto dto)
+        {
+            RoleResponseDto role = await _roleService.CreateRoleAsync(dto);
+            return StatusCode(201,role);
+        }
+        [HttpPatch("{id}")]
+        public async Task<IActionResult> UpdateRoleAsync(byte id,RoleUpdateDto dto)
+        {
+            RoleResponseDto role = await _roleService.UpdateRoleAsync(id,dto);
+            return Ok(role);
+        }
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteRoleAsync(byte id)
+        {
+            await _roleService.DeleteRoleAsync(id);
+            return NoContent();
+        }
+    }
+}
