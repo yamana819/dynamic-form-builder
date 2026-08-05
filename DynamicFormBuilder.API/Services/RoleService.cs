@@ -10,9 +10,10 @@ namespace DynamicFormBuilder.API.Services;
 public class RoleService : IRoleService
 {
     private readonly DynamicFormBuilderDbContext _context;
-
-    public RoleService(DynamicFormBuilderDbContext context)
+    private readonly IAuthorizationService _authorizationService; 
+    public RoleService(DynamicFormBuilderDbContext context,IAuthorizationService authorizationService)
     {
+        _authorizationService=authorizationService;
         _context=context;
     }
 
@@ -74,6 +75,7 @@ public class RoleService : IRoleService
         Role role = MapToRole(dto);
         _context.Add(role);
         await _context.SaveChangesAsync();
+        await _authorizationService.CreateAuthorizationsForNewRoleAsync(role.RoleId);
         return MapToDto(role);
     }
 
