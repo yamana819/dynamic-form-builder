@@ -11,7 +11,7 @@ public class MenuResponseDto
 
     public int? DisplayOrder { get; set; }
 
-    public string? Href { get; set; }
+    public string Href { get; set; }=null!;
 
     public List<MenuResponseDto> SubMenus { get; set; } = new();
 

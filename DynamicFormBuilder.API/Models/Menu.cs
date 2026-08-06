@@ -13,7 +13,7 @@ public partial class Menu
 
     public int? DisplayOrder { get; set; }
 
-    public string? Href { get; set; }
+    public string Href { get; set; }=null!;
 
     public virtual ICollection<Authorization> Authorizations { get; set; } = new List<Authorization>();
 

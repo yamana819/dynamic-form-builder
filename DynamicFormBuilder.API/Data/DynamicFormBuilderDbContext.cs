@@ -133,6 +133,7 @@ public partial class DynamicFormBuilderDbContext : DbContext
             entity.Property(e => e.MenuId).HasColumnName("menu_id");
             entity.Property(e => e.DisplayOrder).HasColumnName("display_order");
             entity.Property(e => e.Href)
+                .IsRequired()
                 .HasMaxLength(255)
                 .HasColumnName("href");
             entity.Property(e => e.MenuName)
