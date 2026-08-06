@@ -45,4 +45,6 @@ GO
 ALTER TABLE form 
 ADD CONSTRAINT fk_group_code
 FOREIGN KEY (group_code) REFERENCES form_group(group_code)
+ON DELETE NO ACTION 
+ON UPDATE CASCADE;
 GO
