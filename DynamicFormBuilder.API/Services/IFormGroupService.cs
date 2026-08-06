@@ -7,11 +7,11 @@ public interface IFormGroupService
 {
     Task<IEnumerable<FormGroupResponseDto>> GetAllFormGroupsAsync(int pageNumber=1,int pageSize=50);
 
-    Task<FormGroupResponseDto> GetFormGroupAsync(Guid formGroupId);
+    Task<FormGroupResponseDto> GetFormGroupAsync(string FormGroupCode);
 
     Task<FormGroupResponseDto> CreateFormGroupAsync(FormGroupCreateDto dto);
 
-    Task<FormGroupResponseDto> UpdateFormGroupAsync(Guid formGroupId,FormGroupUpdateDto dto);
+    Task<FormGroupResponseDto> UpdateFormGroupAsync(string FormGroupCode,FormGroupUpdateDto dto);
 
-    Task DeleteFormGroupAsync(Guid formGroupId);
+    Task DeleteFormGroupAsync(string FormGroupCode);
 }

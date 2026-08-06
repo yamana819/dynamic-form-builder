@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using DynamicFormBuilder.API.Data;
 using DynamicFormBuilder.API.DTOs.FormGroup;
 using DynamicFormBuilder.API.Exceptions;
@@ -20,14 +21,15 @@ public class FormGroupService : IFormGroupService
     {
         return new FormGroup
         {
-            FormGroupName=dto.FormGroupName
+            FormGroupCode=dto.FormGroupCode,
+            FormGroupName=Regex.Replace(dto.FormGroupName,@"\s+"," ").Trim()
         };
     }
     private FormGroupResponseDto MapToDto(FormGroup form)
     {
         return new FormGroupResponseDto
         {
-            FormGroupId=form.FormGroupId,
+            FormGroupCode=form.FormGroupCode,
             FormGroupName=form.FormGroupName,
             CreatedAt=form.CreatedAt,
             LastUpdate=form.LastUpdate
@@ -38,7 +40,7 @@ public class FormGroupService : IFormGroupService
     {
         if (!string.IsNullOrWhiteSpace(dto.FormGroupName) && (dto.FormGroupName!=formGroup.FormGroupName))
         {
-            formGroup.FormGroupName=dto.FormGroupName;
+            formGroup.FormGroupName=Regex.Replace(dto.FormGroupName,@"\s+"," ").Trim();
             formGroup.LastUpdate=DateTime.UtcNow;
         }
     }
@@ -47,12 +49,12 @@ public class FormGroupService : IFormGroupService
     {
         return await _context.FormGroups
             .Where(f=>!f.IsDeleted)
-            .OrderBy(f=>f.FormGroupId)
+            .OrderBy(f=>f.FormGroupCode)
             .Skip((pageNumber-1)*pageSize)
             .Take(pageSize)
             .Select(f=>new FormGroupResponseDto
             {
-                FormGroupId=f.FormGroupId,                
+                FormGroupCode=f.FormGroupCode,                
                 FormGroupName=f.FormGroupName,
                 CreatedAt=f.CreatedAt,
                 LastUpdate=f.LastUpdate
@@ -60,10 +62,10 @@ public class FormGroupService : IFormGroupService
             .AsNoTracking()
             .ToListAsync();
     }
-    public async Task<FormGroupResponseDto> GetFormGroupAsync(Guid formGroupId)
+    public async Task<FormGroupResponseDto> GetFormGroupAsync(string formGroupCode)
     {
         FormGroup? formGroup = await _context.FormGroups
-                            .Where(f=>f.FormGroupId==formGroupId && !f.IsDeleted)
+                            .Where(f=>f.FormGroupCode==formGroupCode && !f.IsDeleted)
                             .AsNoTracking()
                             .FirstOrDefaultAsync() ?? throw new ResourceNotFoundException("Form grubu bulunamadı.");
         return MapToDto(formGroup);
@@ -71,10 +73,15 @@ public class FormGroupService : IFormGroupService
 
     public async Task<FormGroupResponseDto> CreateFormGroupAsync(FormGroupCreateDto dto)
     {
-        bool formgGroupExists = await _context.FormGroups.AnyAsync(f=>f.FormGroupName==dto.FormGroupName);
-        if (formgGroupExists)
+        bool formgGroupNameExists = await _context.FormGroups.AnyAsync(f=>f.FormGroupName==dto.FormGroupName);
+        bool formGroupCodeExists = await _context.FormGroups.AnyAsync(f=>f.FormGroupCode==dto.FormGroupCode);
+        if (formgGroupNameExists)
         {
-            throw new ConflictException($"{dto.FormGroupName} form grubu ismi zaten kullanılıyor.");
+            throw new ConflictException("Form grup ismi zaten kullanılıyor.");
+        }
+        if (formGroupCodeExists)
+        {
+            throw new ConflictException("Form grup kodu zaten kullanılıyor.");
         }
         FormGroup formGroup = MapToFormGroup(dto);
         _context.FormGroups.Add(formGroup);
@@ -82,18 +89,19 @@ public class FormGroupService : IFormGroupService
         return MapToDto(formGroup);
     }
     
-    public async Task<FormGroupResponseDto> UpdateFormGroupAsync(Guid formGroupId,FormGroupUpdateDto dto)
+    public async Task<FormGroupResponseDto> UpdateFormGroupAsync(string formGroupCode,FormGroupUpdateDto dto)
     {
         FormGroup? formGroup = await _context.FormGroups
-                            .Where(f=>f.FormGroupId==formGroupId && !f.IsDeleted)
+                            .Where(f=>f.FormGroupCode==formGroupCode && !f.IsDeleted)
                             .FirstOrDefaultAsync() ?? throw new ResourceNotFoundException("Güncelleme işlemi sırasında form grubu bulunamadı.");
-        if (!string.IsNullOrWhiteSpace(dto.FormGroupName) && dto.FormGroupName != formGroup.FormGroupName)
+        bool isFormGroupNameUpdated=(!string.IsNullOrWhiteSpace(dto.FormGroupName)) && (dto.FormGroupName != formGroup.FormGroupName);
+        if (isFormGroupNameUpdated)
         {
             bool formGroupExists = await _context.FormGroups
-                .AnyAsync(f => f.FormGroupName == dto.FormGroupName);
+                .AnyAsync(f => (f.FormGroupCode!=formGroup.FormGroupCode) && (f.FormGroupName == dto.FormGroupName));
             if (formGroupExists)
             {
-                throw new ConflictException($"'{dto.FormGroupName}' form grubu ismi zaten kullanılıyor.");
+                throw new ConflictException("Form grup ismi zaten kullanılıyor.");
             }
         }
         UpdateEntityFromDto(formGroup,dto);
@@ -101,12 +109,20 @@ public class FormGroupService : IFormGroupService
         return MapToDto(formGroup);
     }
 
-    public async Task DeleteFormGroupAsync(Guid formGroupId)
+    public async Task DeleteFormGroupAsync(string FormGroupCode)
     {
         FormGroup? formGroup = await _context.FormGroups
-                            .Where(f=>f.FormGroupId==formGroupId && !f.IsDeleted)
+                            .Where(f=>f.FormGroupCode==FormGroupCode && !f.IsDeleted)
+                            .Include(f=>f.Forms)
                             .FirstOrDefaultAsync() ?? throw new ResourceNotFoundException("Silme işlemi sırasında form grubu bulunamadı.");
         formGroup.IsDeleted=true;
+        if (formGroup.Forms!=null && formGroup.Forms.Any())
+        {
+            foreach (var form in formGroup.Forms)
+            {
+                form.IsDeleted=true;
+            }
+        }
         await _context.SaveChangesAsync();
     }
 }

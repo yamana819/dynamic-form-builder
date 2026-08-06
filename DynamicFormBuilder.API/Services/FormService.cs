@@ -3,6 +3,7 @@ using DynamicFormBuilder.API.Data;
 using DynamicFormBuilder.API.DTOs.Form;
 using Microsoft.EntityFrameworkCore;
 using DynamicFormBuilder.API.Exceptions;
+using System.Text.RegularExpressions;
 
 namespace DynamicFormBuilder.API.Services;
 
@@ -19,12 +20,12 @@ public class FormService : IFormService
     {
         return new Form
         {
-            FormName=dto.FormName,
+            FormName=Regex.Replace(dto.FormName,@"\s+"," ").Trim(),
             TargetTableName=dto.TargetTableName,
             TargetPrimaryKey=dto.TargetPrimaryKey,
             ViewName=dto.ViewName,
             FormSchema=dto.FormSchema,
-            FormGroupId=dto.FormGroupId
+            FormGroupCode=dto.FormGroupCode
         };
     }
     private FormResponseDto MapToDto(Form form)
@@ -33,7 +34,7 @@ public class FormService : IFormService
         {
             FormId=form.FormId,
             FormName=form.FormName,
-            FormGroupId=form.FormGroupId,
+            FormGroupCode=form.FormGroupCode,
             TargetTableName=form.TargetTableName,
             TargetPrimaryKey=form.TargetPrimaryKey,
             ViewName=form.ViewName,
@@ -59,7 +60,7 @@ public class FormService : IFormService
         }
         if (!string.IsNullOrWhiteSpace(dto.FormName) && (form.FormName!=dto.FormName))
         {
-            form.FormName=dto.FormName;
+            form.FormName=Regex.Replace(dto.FormName,@"\s+"," ").Trim();
             isUpdated=true;
         }
         if (!string.IsNullOrWhiteSpace(dto.TargetTableName) && (form.TargetTableName!=dto.TargetTableName))
@@ -82,9 +83,9 @@ public class FormService : IFormService
             form.FormSchema=dto.FormSchema;
             isUpdated=true;
         }
-        if (dto.FormGroupId.HasValue && (form.FormGroupId)!=dto.FormGroupId)
+        if (!string.IsNullOrWhiteSpace(dto.FormGroupCode) && (form.FormGroupCode!=dto.FormGroupCode))
         {
-            form.FormGroupId=dto.FormGroupId.Value;
+            form.FormGroupCode=dto.FormGroupCode;
             isUpdated=true;
         }
         if (isUpdated)
@@ -92,17 +93,17 @@ public class FormService : IFormService
             form.LastUpdate=DateTime.UtcNow;
         }
     }
-    public async Task<IEnumerable<FormResponseDto>> GetFormsByGroupAsync(Guid formGroupId,int pageNumber=1,int pageSize=50)
+    public async Task<IEnumerable<FormResponseDto>> GetFormsByGroupAsync(string formGroupCode,int pageNumber=1,int pageSize=50)
     {
         return await _context.Forms
-            .Where(f=>f.FormGroupId==formGroupId && !f.IsDeleted)
+            .Where(f=>f.FormGroupCode==formGroupCode && !f.IsDeleted)
             .OrderBy(f=>f.FormId)
             .Skip((pageNumber-1)*pageSize)
             .Take(pageSize)
             .Select(f=>new FormResponseDto {
                 FormId=f.FormId,
                 FormName=f.FormName,
-                FormGroupId=f.FormGroupId,
+                FormGroupCode=f.FormGroupCode,
                 TargetTableName=f.TargetTableName,
                 TargetPrimaryKey=f.TargetPrimaryKey,
                 ViewName=f.ViewName,
@@ -124,7 +125,12 @@ public class FormService : IFormService
     }
     public async Task<FormResponseDto> CreateFormAsync(FormCreateDto dto)
     {
+        bool formGroupExists = await _context.FormGroups.AnyAsync(f=>f.FormGroupCode==dto.FormGroupCode);
         bool formExists = await _context.Forms.AnyAsync(f=>f.FormName==dto.FormName);
+        if (!formGroupExists)
+        {
+            throw new ResourceNotFoundException("Belirtilen form grubu bulunamad");
+        }
         if (formExists)
         {
             throw new ConflictException("Bu form ismi zaten kullanılıyor.");
@@ -140,6 +146,14 @@ public class FormService : IFormService
         Form? form = await _context.Forms
                         .Where(f=>f.FormId==formId && !f.IsDeleted)
                         .FirstOrDefaultAsync() ?? throw new ResourceNotFoundException("Güncelleme işlemi sırasında form bulunamadı.");
+        if (!string.IsNullOrWhiteSpace(dto.FormGroupCode) && dto.FormGroupCode != form.FormGroupCode)
+        {
+            bool formGroupExists = await _context.FormGroups.AnyAsync(f=>f.FormGroupCode==dto.FormGroupCode);
+            if (!formGroupExists)
+            {
+                throw new ResourceNotFoundException("Belirtilen form grubu bulunamadı.");
+            }
+        }
         if (!string.IsNullOrWhiteSpace(dto.FormName) && (dto.FormName != form.FormName))
         {
             bool formExists = await _context.Forms
