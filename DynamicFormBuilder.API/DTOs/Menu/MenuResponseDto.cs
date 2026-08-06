@@ -14,4 +14,10 @@ public class MenuResponseDto
     public string? Href { get; set; }
 
     public List<MenuResponseDto> SubMenus { get; set; } = new();
+
+    public bool CanCreate {get;set;}
+
+    public bool CanEdit {get;set;}
+
+    public bool CanDelete {get;set;}
 }
