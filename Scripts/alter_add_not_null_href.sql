@@ -1,0 +1,5 @@
+USE DynamicFormBuilderDB;
+GO
+
+ALTER TABLE menu ALTER COLUMN href NVARCHAR(255) NOT NULL;
+GO
