@@ -5,7 +5,7 @@ namespace DynamicFormBuilder.API.DTOs.FormGroup;
 public class FormGroupResponseDto
 {
 
-    public Guid FormGroupId { get; set; }
+    public string FormGroupCode { get; set; }=null!;
 
     public string FormGroupName { get; set; } = null!;
 

@@ -19,7 +19,7 @@ public class FormUpdateDto
 
     public string? FormSchema { get; set; }
 
-    public Guid? FormGroupId { get; set; }
+    public string? FormGroupCode { get; set; }
 
     public bool? IsPublished { get; set; }
 
