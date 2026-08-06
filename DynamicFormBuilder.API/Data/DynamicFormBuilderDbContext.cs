@@ -62,7 +62,10 @@ public partial class DynamicFormBuilderDbContext : DbContext
                 .HasColumnType("datetime")
                 .HasColumnName("created_at")
                 .ValueGeneratedOnAdd();
-            entity.Property(e => e.FormGroupId).HasColumnName("form_group_id");
+            entity.Property(e=>e.FormGroupCode)
+                .HasColumnName("group_code")
+                .HasMaxLength(50)
+                .IsRequired();
             entity.Property(e => e.FormName)
                 .HasMaxLength(150)
                 .HasColumnName("form_name");
@@ -89,21 +92,21 @@ public partial class DynamicFormBuilderDbContext : DbContext
                 .HasColumnName("is_published");
 
             entity.HasOne(d => d.FormGroup).WithMany(p => p.Forms)
-                .HasForeignKey(d => d.FormGroupId)
-                .HasConstraintName("fk_form_group_id");
+                .HasForeignKey(d => d.FormGroupCode)
+                .HasConstraintName("fk_group_code");
         });
 
         modelBuilder.Entity<FormGroup>(entity =>
         {
-            entity.HasKey(e => e.FormGroupId).HasName("PK__form_gro__8ACAD5B432A45A1A");
+            entity.HasKey(e => e.FormGroupCode).HasName("pk_form_group_code");
 
             entity.ToTable("form_group");
 
             entity.HasIndex(e => e.FormGroupName, "UQ__form_gro__71018BFE166D3F3B").IsUnique();
 
-            entity.Property(e => e.FormGroupId)
-                .HasDefaultValueSql("(newsequentialid())")
-                .HasColumnName("form_group_id");
+            entity.Property(e=>e.FormGroupCode)
+                .HasColumnName("group_code")
+                .HasMaxLength(50);
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime")
