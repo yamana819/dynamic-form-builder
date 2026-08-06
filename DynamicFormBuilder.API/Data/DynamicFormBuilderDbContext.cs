@@ -142,6 +142,10 @@ public partial class DynamicFormBuilderDbContext : DbContext
             entity.Property(e => e.ParentMenuId)
                 .HasDefaultValueSql("(NULL)")
                 .HasColumnName("parent_menu_id");
+            entity.Property(e=>e.IsDeleted)
+                .IsRequired()
+                .HasDefaultValue(false)
+                .HasColumnName("is_deleted");
 
             entity.HasOne(d => d.ParentMenu).WithMany(p => p.InverseParentMenu)
                 .HasForeignKey(d => d.ParentMenuId)
