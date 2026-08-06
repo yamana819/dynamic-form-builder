@@ -20,4 +20,6 @@ public partial class Menu
     public virtual ICollection<Menu> InverseParentMenu { get; set; } = new List<Menu>();
 
     public virtual Menu? ParentMenu { get; set; }
+
+    public bool IsDeleted {get;set;}
 }
