@@ -74,7 +74,7 @@ public class FormGroupService : IFormGroupService
         return MapToDto(formGroup);
     }
 
-    public async Task<FormGroupResponseDto> CreateFormGroupAsync(FormGroupCreateDto dto)
+    public async Task<FormGroupResponseDto> CreateFormGroupAsync(FormGroupCreateDto dto,byte creatorRoleId)
     {
         bool formgGroupNameExists = await _context.FormGroups.AnyAsync(f=>f.FormGroupName==dto.FormGroupName);
         bool formGroupCodeExists = await _context.FormGroups.AnyAsync(f=>f.FormGroupCode==dto.FormGroupCode);
@@ -89,7 +89,7 @@ public class FormGroupService : IFormGroupService
         FormGroup formGroup = MapToFormGroup(dto);
         _context.FormGroups.Add(formGroup);
         await _context.SaveChangesAsync();
-        await _menuService.CreateMenuForFormGroupAsync(formGroup.FormGroupCode,formGroup.FormGroupName);
+        await _menuService.CreateMenuForFormGroupAsync(formGroup.FormGroupCode,formGroup.FormGroupName,creatorRoleId);
         return MapToDto(formGroup);
     }
     
@@ -128,5 +128,6 @@ public class FormGroupService : IFormGroupService
             }
         }
         await _context.SaveChangesAsync();
+        await _menuService.DeleteMenuForFormGroupAsync(formGroup.FormGroupCode);
     }
 }

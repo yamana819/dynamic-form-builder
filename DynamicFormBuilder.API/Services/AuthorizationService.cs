@@ -87,14 +87,14 @@ public class AuthorizationService : IAuthorizationService
         await _context.SaveChangesAsync();
     }
 
-    public async Task CreateAuthorizationsForNewMenuAsync(int menuId)
+    public async Task CreateAuthorizationsForNewMenuAsync(int menuId,byte creatorRoleId)
     {
         var roleIds = await _context.Roles
                         .Select(r=>r.RoleId)
                         .ToListAsync();
         foreach (byte roleId in roleIds)
         {
-            if (roleId != DefaultValues.DefaultAdminRoleId)
+            if (roleId != DefaultValues.DefaultAdminRoleId && roleId!=creatorRoleId)
             {
                 _context.Authorizations.Add(new Authorization
                 {

@@ -14,5 +14,5 @@ public interface IAuthorizationService
 
     Task CreateAuthorizationsForNewRoleAsync(byte roleId);
 
-    Task CreateAuthorizationsForNewMenuAsync(int menuId);
+    Task CreateAuthorizationsForNewMenuAsync(int menuId,byte creatorRoleId);
 }

@@ -9,7 +9,7 @@ public interface IFormGroupService
 
     Task<FormGroupResponseDto> GetFormGroupAsync(string FormGroupCode);
 
-    Task<FormGroupResponseDto> CreateFormGroupAsync(FormGroupCreateDto dto);
+    Task<FormGroupResponseDto> CreateFormGroupAsync(FormGroupCreateDto dto,byte creatorRoleId);
 
     Task<FormGroupResponseDto> UpdateFormGroupAsync(string FormGroupCode,FormGroupUpdateDto dto);
 

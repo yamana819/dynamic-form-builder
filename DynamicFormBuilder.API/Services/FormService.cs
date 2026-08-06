@@ -11,10 +11,13 @@ namespace DynamicFormBuilder.API.Services;
 public class FormService : IFormService
 {
     private readonly DynamicFormBuilderDbContext _context;
+    
+    private readonly IMenuService _menuService;
 
-    public FormService(DynamicFormBuilderDbContext context)
+    public FormService(DynamicFormBuilderDbContext context,IMenuService menuService)
     {
         _context=context;
+        _menuService=menuService;
     }
     private Form MapToForm(FormCreateDto dto)
     {
@@ -45,7 +48,7 @@ public class FormService : IFormService
         };
     }
 
-    private void UpdateEntityFromDto(Form form,FormUpdateDto dto)
+    private async Task UpdateEntityFromDto(Form form,FormUpdateDto dto)
     {
         bool isUpdated = false;
         if (form.IsPublished)
@@ -61,6 +64,7 @@ public class FormService : IFormService
         if (!string.IsNullOrWhiteSpace(dto.FormName) && (form.FormName!=dto.FormName))
         {
             form.FormName=Regex.Replace(dto.FormName,@"\s+"," ").Trim();
+            await _menuService.UpdateMenuForFormAsync(form.FormId,form.FormGroupCode,form.FormName);
             isUpdated=true;
         }
         if (!string.IsNullOrWhiteSpace(dto.TargetTableName) && (form.TargetTableName!=dto.TargetTableName))
@@ -118,13 +122,13 @@ public class FormService : IFormService
                     .FirstOrDefaultAsync() ?? throw new ResourceNotFoundException("Form bulunamadı.");
         return MapToDto(form);
     }
-    public async Task<FormResponseDto> CreateFormAsync(FormCreateDto dto)
+    public async Task<FormResponseDto> CreateFormAsync(FormCreateDto dto,byte creatorRoleId)
     {
         bool formGroupExists = await _context.FormGroups.AnyAsync(f=>f.FormGroupCode==dto.FormGroupCode);
         bool formExists = await _context.Forms.AnyAsync(f=>f.FormName==dto.FormName);
         if (!formGroupExists)
         {
-            throw new ResourceNotFoundException("Belirtilen form grubu bulunamad");
+            throw new ResourceNotFoundException("Belirtilen form grubu bulunamadı");
         }
         if (formExists)
         {
@@ -133,6 +137,7 @@ public class FormService : IFormService
         Form form = MapToForm(dto);
         _context.Forms.Add(form);
         await _context.SaveChangesAsync();
+        await _menuService.CreateMenuForFormAsync(form.FormId,form.FormGroupCode,form.FormName,creatorRoleId);
         return MapToDto(form);
     }
 
@@ -150,7 +155,7 @@ public class FormService : IFormService
                 throw new ConflictException($"'{dto.FormName}' form ismi zaten kullanılıyor.");
             }
         }
-        UpdateEntityFromDto(form,dto);
+        await UpdateEntityFromDto(form,dto);
         await _context.SaveChangesAsync();
         return MapToDto(form);
     }
@@ -161,6 +166,7 @@ public class FormService : IFormService
                         .FirstOrDefaultAsync() ?? throw new ResourceNotFoundException("Silme işlemi sırasında form bulunamadı.");
         form.IsDeleted=true;
         await _context.SaveChangesAsync();
+        await _menuService.DeleteMenuForFormAsync(form.FormId,form.FormGroupCode);
     }
 
     public async Task<FormResponseDto> PublishFormAsync(Guid formId)
