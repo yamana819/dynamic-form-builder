@@ -9,7 +9,7 @@ public partial class Form
 
     public string FormName { get; set; } = null!;
 
-    public Guid FormGroupId { get; set; }
+    public string FormGroupCode {get;set;}=null!;
 
     public string? TargetTableName { get; set; }
 

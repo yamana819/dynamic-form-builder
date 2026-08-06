@@ -5,7 +5,7 @@ namespace DynamicFormBuilder.API.Models;
 
 public partial class FormGroup
 {
-    public Guid FormGroupId { get; set; }
+    public string FormGroupCode {get;set;}=null!;
 
     public string FormGroupName { get; set; } = null!;
 
