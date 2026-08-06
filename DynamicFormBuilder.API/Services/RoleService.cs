@@ -1,8 +1,10 @@
+using System.Text.RegularExpressions;
 using DynamicFormBuilder.API.Data;
 using DynamicFormBuilder.API.DTOs.Role;
 using DynamicFormBuilder.API.Exceptions;
 using DynamicFormBuilder.API.Models;
 using Microsoft.EntityFrameworkCore;
+using DynamicFormBuilder.API.Constants;
 
 namespace DynamicFormBuilder.API.Services;
 
@@ -21,7 +23,7 @@ public class RoleService : IRoleService
     {
         return new Role
         {
-            RoleName=dto.RoleName
+            RoleName=Regex.Replace(dto.RoleName,@"\s+"," ").Trim()
         };
     }
     
@@ -38,7 +40,7 @@ public class RoleService : IRoleService
     {
         if (!string.IsNullOrWhiteSpace(dto.RoleName) && (dto.RoleName != role.RoleName))
         {
-            role.RoleName=dto.RoleName;
+            role.RoleName=Regex.Replace(dto.RoleName,@"\s+"," ").Trim();
         }
     }
 
@@ -73,7 +75,7 @@ public class RoleService : IRoleService
             throw new ConflictException("Bu rol ismi zaten kullanılıyor.");   
         }
         Role role = MapToRole(dto);
-        _context.Add(role);
+        _context.Roles.Add(role);
         await _context.SaveChangesAsync();
         await _authorizationService.CreateAuthorizationsForNewRoleAsync(role.RoleId);
         return MapToDto(role);
@@ -98,10 +100,14 @@ public class RoleService : IRoleService
     }
     public async Task DeleteRoleAsync(byte roleId)
     {
+        if (roleId == DefaultValues.DefaultAdminRoleId)
+        {
+            throw new BadRequestException("Admin rolü silinemez!");
+        }
         Role? role = await _context.Roles
                         .Where(r=>r.RoleId==roleId)
                         .FirstOrDefaultAsync() ?? throw new ResourceNotFoundException("Silme işlemi sırasında rol bulunamadı");
-        _context.Remove(role);
+        _context.Roles.Remove(role);
         await _context.SaveChangesAsync();
     }
 }

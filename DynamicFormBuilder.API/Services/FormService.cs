@@ -83,11 +83,6 @@ public class FormService : IFormService
             form.FormSchema=dto.FormSchema;
             isUpdated=true;
         }
-        if (!string.IsNullOrWhiteSpace(dto.FormGroupCode) && (form.FormGroupCode!=dto.FormGroupCode))
-        {
-            form.FormGroupCode=dto.FormGroupCode;
-            isUpdated=true;
-        }
         if (isUpdated)
         {
             form.LastUpdate=DateTime.UtcNow;
@@ -146,14 +141,6 @@ public class FormService : IFormService
         Form? form = await _context.Forms
                         .Where(f=>f.FormId==formId && !f.IsDeleted)
                         .FirstOrDefaultAsync() ?? throw new ResourceNotFoundException("Güncelleme işlemi sırasında form bulunamadı.");
-        if (!string.IsNullOrWhiteSpace(dto.FormGroupCode) && dto.FormGroupCode != form.FormGroupCode)
-        {
-            bool formGroupExists = await _context.FormGroups.AnyAsync(f=>f.FormGroupCode==dto.FormGroupCode);
-            if (!formGroupExists)
-            {
-                throw new ResourceNotFoundException("Belirtilen form grubu bulunamadı.");
-            }
-        }
         if (!string.IsNullOrWhiteSpace(dto.FormName) && (dto.FormName != form.FormName))
         {
             bool formExists = await _context.Forms

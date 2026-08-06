@@ -12,9 +12,11 @@ public class FormGroupService : IFormGroupService
 {
     private readonly DynamicFormBuilderDbContext _context;
 
-    public FormGroupService(DynamicFormBuilderDbContext context)
+    private readonly IMenuService _menuService;
+    public FormGroupService(DynamicFormBuilderDbContext context,IMenuService menuService)
     {
         _context=context;
+        _menuService=menuService;
     }
     //Private mapping metodlarını yazıyoruz.
     private FormGroup MapToFormGroup(FormGroupCreateDto dto)
@@ -36,11 +38,12 @@ public class FormGroupService : IFormGroupService
         };
     }
 
-    private void UpdateEntityFromDto(FormGroup formGroup,FormGroupUpdateDto dto)
+    private async Task UpdateEntityFromDto(FormGroup formGroup,FormGroupUpdateDto dto)
     {
         if (!string.IsNullOrWhiteSpace(dto.FormGroupName) && (dto.FormGroupName!=formGroup.FormGroupName))
         {
             formGroup.FormGroupName=Regex.Replace(dto.FormGroupName,@"\s+"," ").Trim();
+            await _menuService.UpdateMenuForFormGroupAsync(formGroup.FormGroupCode,formGroup.FormGroupName);
             formGroup.LastUpdate=DateTime.UtcNow;
         }
     }
@@ -86,6 +89,7 @@ public class FormGroupService : IFormGroupService
         FormGroup formGroup = MapToFormGroup(dto);
         _context.FormGroups.Add(formGroup);
         await _context.SaveChangesAsync();
+        await _menuService.CreateMenuForFormGroupAsync(formGroup.FormGroupCode,formGroup.FormGroupName);
         return MapToDto(formGroup);
     }
     
@@ -104,15 +108,15 @@ public class FormGroupService : IFormGroupService
                 throw new ConflictException("Form grup ismi zaten kullanılıyor.");
             }
         }
-        UpdateEntityFromDto(formGroup,dto);
+        await UpdateEntityFromDto(formGroup,dto);
         await _context.SaveChangesAsync();
         return MapToDto(formGroup);
     }
 
-    public async Task DeleteFormGroupAsync(string FormGroupCode)
+    public async Task DeleteFormGroupAsync(string formGroupCode)
     {
         FormGroup? formGroup = await _context.FormGroups
-                            .Where(f=>f.FormGroupCode==FormGroupCode && !f.IsDeleted)
+                            .Where(f=>f.FormGroupCode==formGroupCode && !f.IsDeleted)
                             .Include(f=>f.Forms)
                             .FirstOrDefaultAsync() ?? throw new ResourceNotFoundException("Silme işlemi sırasında form grubu bulunamadı.");
         formGroup.IsDeleted=true;

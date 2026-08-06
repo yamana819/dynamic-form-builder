@@ -9,7 +9,7 @@ namespace DynamicFormBuilder.API.Services;
 
 public class AuthorizationService : IAuthorizationService
 {
-    private DynamicFormBuilderDbContext _context;
+    private readonly DynamicFormBuilderDbContext _context;
     
     public AuthorizationService(DynamicFormBuilderDbContext context)
     {
