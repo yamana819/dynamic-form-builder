@@ -21,10 +21,10 @@ namespace DynamicFormBuilder.API.Controllers
             var formGroups = await _formGroupService.GetAllFormGroupsAsync();
             return Ok(formGroups);
         }
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetFormGroup(Guid id)
+        [HttpGet("{groupCode}")]
+        public async Task<IActionResult> GetFormGroup(string groupCode)
         {
-            FormGroupResponseDto formGroup = await _formGroupService.GetFormGroupAsync(id);
+            FormGroupResponseDto formGroup = await _formGroupService.GetFormGroupAsync(groupCode);
             return Ok(formGroup);
         }
         [HttpPost]
@@ -33,16 +33,16 @@ namespace DynamicFormBuilder.API.Controllers
             FormGroupResponseDto formGroup = await _formGroupService.CreateFormGroupAsync(dto);
             return StatusCode(201,formGroup);
         }
-        [HttpPatch("{id}")]
-        public async Task<IActionResult> UpdateFormGroup(Guid id,FormGroupUpdateDto dto)
+        [HttpPatch("{groupCode}")]
+        public async Task<IActionResult> UpdateFormGroup(string groupCode,FormGroupUpdateDto dto)
         {
-            FormGroupResponseDto formGroup = await _formGroupService.UpdateFormGroupAsync(id,dto);
+            FormGroupResponseDto formGroup = await _formGroupService.UpdateFormGroupAsync(groupCode,dto);
             return Ok(formGroup);
         }
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteFormGroup(Guid id)
+        [HttpDelete("{groupCode}")]
+        public async Task<IActionResult> DeleteFormGroup(string groupCode)
         {
-            await _formGroupService.DeleteFormGroupAsync(id);
+            await _formGroupService.DeleteFormGroupAsync(groupCode);
             return NoContent();
         }
     }

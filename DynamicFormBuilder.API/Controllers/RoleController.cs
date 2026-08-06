@@ -20,7 +20,7 @@ namespace DynamicFormBuilder.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllRoles([FromQuery] int pageNumber=1,[FromQuery] int pageSize=50)
         {
-            IEnumerable<RoleResponseDto> roles = await _roleService.GetAllRolesAsync();
+            IEnumerable<RoleResponseDto> roles = await _roleService.GetAllRolesAsync(pageNumber,pageSize);
             return Ok(roles);
         }
         [HttpGet("{id}")]

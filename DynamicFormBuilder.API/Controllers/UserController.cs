@@ -45,18 +45,18 @@ namespace DynamicFormBuilder.API.Controllers
         }
 
         [HttpGet("admin")]
-        public async Task<IActionResult> GetAllUsers([FromQuery] int pageNumber,[FromQuery] int pageSize)
+        public async Task<IActionResult> GetAllUsers([FromQuery] int pageNumber=1,[FromQuery] int pageSize=50)
         {
             var users = await _userService.GetAllUsersAsync(pageNumber,pageSize);
             return Ok(users);
         }
-        [HttpGet("{id}/admin")]
+        [HttpGet("admin/{id}")]
         public async Task<IActionResult> GetUserForAdmin(Guid id)
         {
             AdminUserResponseDto user = await _userService.GetUserForAdminAsync(id);
             return Ok(user);
         }
-        [HttpPatch("{id}/admin")]
+        [HttpPatch("admin/{id}")]
         public async Task<IActionResult> UpdateUserForAdmin(Guid id,AdminUserUpdateDto dto)
         {
             AdminUserResponseDto user = await _userService.UpdateUserForAdminAsync(id,dto);

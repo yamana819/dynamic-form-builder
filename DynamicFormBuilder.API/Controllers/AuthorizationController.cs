@@ -26,7 +26,7 @@ namespace DynamicFormBuilder.API.Controllers
             return Ok(authorizations);
         }
         [HttpPatch("{id}")]
-        public async Task<IActionResult> UpdateAuthorizations(byte id,IEnumerable<AuthorizationUpdateDto> dtos)
+        public async Task<IActionResult> UpdateAuthorizations(byte id,List<AuthorizationUpdateDto> dtos)
         {
             IEnumerable<AuthorizationResponseDto> authorizations = await _authorizationService.UpdateAuthorizationsAsync(id,dtos);
             return Ok(authorizations);

@@ -14,10 +14,10 @@ namespace DynamicFormBuilder.API.Controllers
             _formService=formService;
         }
     
-        [HttpGet("{formGroupId}/forms-by-group")]
-        public async Task<IActionResult> GetFormsByGroup(Guid formGroupId)
+        [HttpGet("forms/{formGroupCode}")]
+        public async Task<IActionResult> GetFormsByGroup(string formGroupCode)
         {
-            var forms = await _formService.GetFormsByGroupAsync(formGroupId);
+            var forms = await _formService.GetFormsByGroupAsync(formGroupCode);
             return Ok(forms);
         }
         [HttpGet("{formId}")]
