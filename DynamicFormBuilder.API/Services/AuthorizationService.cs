@@ -3,6 +3,7 @@ using DynamicFormBuilder.API.Models;
 using DynamicFormBuilder.API.Data;
 using DynamicFormBuilder.API.DTOs.Authorization;
 using Microsoft.EntityFrameworkCore;
+using DynamicFormBuilder.API.Exceptions;
 
 namespace DynamicFormBuilder.API.Services;
 
@@ -52,15 +53,20 @@ public class AuthorizationService : IAuthorizationService
                                 .Where(a=>a.RoleId==roleId)
                                 .Include(a=>a.Menu)
                                 .ToListAsync();
+        bool isDuplicated = dtos.GroupBy(d=>d.MenuId).Any(d=>d.Count()>1);
+        if (isDuplicated)
+        {
+            throw new BadRequestException("Bir yetkilendirme tekrarı var.");
+        }
         var dtoDictionary = dtos.ToDictionary(d=>d.MenuId);
         foreach (var authorization in authorizations)
         {
             if (dtoDictionary.TryGetValue(authorization.MenuId,out var dto))
             {
-                authorization.CanView=dto.CanView ?? false;
-                authorization.CanCreate=dto.CanCreate ?? false;
-                authorization.CanEdit=dto.CanEdit ?? false;
-                authorization.CanDelete=dto.CanDelete ?? false;
+                authorization.CanView=dto.CanView ?? authorization.CanView;
+                authorization.CanCreate=dto.CanCreate ?? authorization.CanCreate;
+                authorization.CanEdit=dto.CanEdit ?? authorization.CanEdit;
+                authorization.CanDelete=dto.CanDelete ?? authorization.CanDelete;
             }
         }
         await _context.SaveChangesAsync();
