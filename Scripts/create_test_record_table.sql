@@ -6,4 +6,4 @@ CREATE TABLE test_record (
     test_type TINYINT,
     test_serial_number NVARCHAR(100),
     test_size INT DEFAULT 5,
-)
+);
