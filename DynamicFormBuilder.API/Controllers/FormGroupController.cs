@@ -1,24 +1,28 @@
-using DynamicFormBuilder.API.Data;
 using DynamicFormBuilder.API.DTOs.FormGroup;
-using DynamicFormBuilder.API.Models;
 using DynamicFormBuilder.API.Services;
 using Microsoft.AspNetCore.Mvc;
 using DynamicFormBuilder.API.Constants;
+using DynamicFormBuilder.API.Filters;
 
 namespace DynamicFormBuilder.API.Controllers
 {
     [ApiController]
-    [Route("/api/[controller]")]
-    public class FormGroupController : ControllerBase
+    [Route("api/[controller]")]
+    public class FormGroupController : BaseApiController
     {
         private readonly IFormGroupService _formGroupService;
         private readonly IPermissionService _permissionService;
-        public FormGroupController(IFormGroupService formGroupService,IPermissionService permissionService)
+
+        private readonly IMenuService _menuService;
+
+        public FormGroupController(IFormGroupService formGroupService,IPermissionService permissionService,IMenuService menuService,IUserService userService):base(userService)
         {
             _formGroupService=formGroupService;
             _permissionService=permissionService;
+            _menuService=menuService;
         }
         [HttpGet]
+        [RequirePermission("/forms",PermissionType.CanView)]
         public async Task<IActionResult> GetAllFormGroups()
         {
             var formGroups = await _formGroupService.GetAllFormGroupsAsync();
@@ -27,28 +31,35 @@ namespace DynamicFormBuilder.API.Controllers
         [HttpGet("{groupCode}")]
         public async Task<IActionResult> GetFormGroup(string groupCode)
         {
-            await _permissionService.CheckPermissionForFormGroupAsync(roleId,groupCode,PermissionType.CanView);
+            string href = _menuService.BuildHrefForFormGroup(groupCode);
+            byte roleId = await GetCurrentUserRoleIdAsync();
+            await _permissionService.CheckPermissionAsync(roleId,href,PermissionType.CanView);
             FormGroupResponseDto formGroup = await _formGroupService.GetFormGroupAsync(groupCode);
             return Ok(formGroup);
         }
         [HttpPost]
+        [RequirePermission("/forms",PermissionType.CanCreate)]
         public async Task<IActionResult> CreateFormGroup(FormGroupCreateDto dto)
         {
-            await _permissionService.CheckPermissionForFormGroupAsync(roleId,dto.FormGroupCode,PermissionType.CanCreate);
-            FormGroupResponseDto formGroup = await _formGroupService.CreateFormGroupAsync(dto);
+            byte roleId = await GetCurrentUserRoleIdAsync();
+            FormGroupResponseDto formGroup = await _formGroupService.CreateFormGroupAsync(dto,roleId);
             return StatusCode(201,formGroup);
         }
         [HttpPatch("{groupCode}")]
         public async Task<IActionResult> UpdateFormGroup(string groupCode,FormGroupUpdateDto dto)
         {
-            await _permissionService.CheckPermissionForFormGroupAsync(roleId,groupCode,PermissionType.CanEdit);
+            string href = _menuService.BuildHrefForFormGroup(groupCode);
+            byte roleId = await GetCurrentUserRoleIdAsync();
+            await _permissionService.CheckPermissionAsync(roleId,href,PermissionType.CanEdit);
             FormGroupResponseDto formGroup = await _formGroupService.UpdateFormGroupAsync(groupCode,dto);
             return Ok(formGroup);
         }
         [HttpDelete("{groupCode}")]
         public async Task<IActionResult> DeleteFormGroup(string groupCode)
         {
-            await _permissionService.CheckPermissionForFormGroupAsync(roleId,groupCode,PermissionType.CanDelete);
+            string href = _menuService.BuildHrefForFormGroup(groupCode);
+            byte roleId = await GetCurrentUserRoleIdAsync();
+            await _permissionService.CheckPermissionAsync(roleId,href,PermissionType.CanDelete);
             await _formGroupService.DeleteFormGroupAsync(groupCode);
             return NoContent();
         }
