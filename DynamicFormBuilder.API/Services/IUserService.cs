@@ -20,4 +20,6 @@ public interface IUserService
     Task DeleteUserAsync(Guid userId);
 
     Task ChangePasswordAsync(Guid userId,UserChangePasswordDto dto);
+
+    Task<byte> GetRoleIdAsync(Guid userId);
 }
