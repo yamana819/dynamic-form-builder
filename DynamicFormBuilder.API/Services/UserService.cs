@@ -124,7 +124,7 @@ public class UserService : IUserService
                     .Include(u => u.Role)
                     .Where(u => u.UserId == userId && !u.IsDeleted)
                     .FirstOrDefaultAsync() ?? throw new ResourceNotFoundException("Güncelleme işlemi sırasında kullanıcı bulunamadı.");
-        if (!string.IsNullOrWhiteSpace(dto.UserName) && user.UserName != dto.UserName)
+        if (!string.IsNullOrWhiteSpace(dto.UserName) && user.UserName != dto.UserName && user.UserId!=userId)
         {
             bool userExists = await _context.Users.AnyAsync(u=>u.UserName==dto.UserName);
             if (userExists)
@@ -190,5 +190,14 @@ public class UserService : IUserService
                     .FirstOrDefaultAsync() ?? throw new ResourceNotFoundException("Şifre değişikliği işlemi sırasında kullanıcı bulunamadı."); 
         ChangePasswordFromDto(user,dto);
         await _context.SaveChangesAsync();
+    }
+
+    public async Task<byte> GetRoleIdAsync(Guid userId)
+    {
+        var roleId = await _context.Users
+                        .Where(u=>u.UserId==userId && !u.IsDeleted)
+                        .Select(u=>(byte?)u.RoleId)
+                        .FirstOrDefaultAsync() ?? throw new ResourceNotFoundException("Rol sorgusu yapılırken kullanıcı bulunamadı.");
+        return roleId;
     }
 }
