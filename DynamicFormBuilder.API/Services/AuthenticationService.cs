@@ -17,9 +17,9 @@ public class AuthenticationService:IAuthenticationService
     private readonly DynamicFormBuilderDbContext _context;
     private readonly IConfiguration _configuration;
 
-    private readonly PasswordHasher<User> _passwordHasher;
+    private readonly IPasswordHasher<User> _passwordHasher;
 
-    public AuthenticationService(DynamicFormBuilderDbContext context,IConfiguration configuration,PasswordHasher<User> passwordHasher)
+    public AuthenticationService(DynamicFormBuilderDbContext context,IConfiguration configuration,IPasswordHasher<User> passwordHasher)
     {
         _context=context;
         _configuration=configuration;
@@ -28,7 +28,7 @@ public class AuthenticationService:IAuthenticationService
     public async Task<AuthenticationResponseDto> LoginAsync(LoginDto dto)
     {
         var user = await _context.Users
-                    .Where(u=>u.UserName==dto.UserName)
+                    .Where(u=>u.UserName==dto.UserName && !u.IsDeleted)
                     .AsNoTracking()
                     .FirstOrDefaultAsync() ?? throw new AuthenticationFailedException("Kullanıcı adı veya şifre yanlış.");
         if (_passwordHasher.VerifyHashedPassword(user, user.PasswordHash, dto.Password)==PasswordVerificationResult.Failed)
@@ -38,7 +38,7 @@ public class AuthenticationService:IAuthenticationService
         var claims = new[]
         {
             new Claim(ClaimTypes.Name,user.UserName),
-            new Claim(ClaimTypes.Role,user.RoleId.ToString()),
+            new Claim(ClaimTypes.NameIdentifier,user.UserId.ToString()),
         };
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:SecretKey"]));
         var creds = new SigningCredentials(key,SecurityAlgorithms.HmacSha256);
@@ -46,7 +46,7 @@ public class AuthenticationService:IAuthenticationService
             issuer:_configuration["JwtSettings:Issuer"],
             audience:_configuration["JwtSettings:Audience"],
             claims:claims,
-            expires:DateTime.Now.AddHours(2),
+            expires:DateTime.UtcNow.AddHours(2),
             signingCredentials:creds
         );
         var tokenString = new JwtSecurityTokenHandler().WriteToken(tokenOptions);
