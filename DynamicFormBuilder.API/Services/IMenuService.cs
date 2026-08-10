@@ -23,4 +23,8 @@ public interface IMenuService
     Task DeleteMenuForFormGroupAsync(string formGroupCode);
     
     Task DeleteMenuForFormAsync(Guid formId, string formGroupCode);
+
+    string BuildHrefForFormGroup(string formGroupCode);
+
+    string BuildHrefForForm(string formGroupCode,Guid formId);
 }

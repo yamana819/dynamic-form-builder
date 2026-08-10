@@ -18,6 +18,15 @@ public class MenuService : IMenuService
         _context=context;
         _authorizationService=authorizationService;
     }
+
+    public string BuildHrefForFormGroup(string formGroupCode)
+    {
+        return $"/forms/{formGroupCode}";
+    }
+    public string BuildHrefForForm(string formGroupCode,Guid formId)
+    {
+        return $"/forms/{formGroupCode}/{formId}";
+    }
     public async Task<IEnumerable<MenuResponseDto>> GetMenusByRoleIdAsync(byte roleId)
     {
         var menus = await _context.Menus
@@ -69,7 +78,7 @@ public class MenuService : IMenuService
         {
             ParentMenuId=null,
             MenuName=formGroupName,
-            Href=$"/forms/{formGroupCode}",
+            Href=BuildHrefForFormGroup(formGroupCode)
         };
         _context.Add(menu);
         await _context.SaveChangesAsync();
@@ -84,7 +93,7 @@ public class MenuService : IMenuService
         {
             ParentMenuId=parentMenu.MenuId,
             MenuName=formName,
-            Href=$"/forms/{formGroupCode}/{formId}"
+            Href=BuildHrefForForm(formGroupCode,formId)
         };
         _context.Menus.Add(menu);
         await _context.SaveChangesAsync();
@@ -112,7 +121,7 @@ public class MenuService : IMenuService
     public async Task DeleteMenuForFormGroupAsync(string formGroupCode)
     {
         var menus = await _context.Menus
-                        .Where(m=>m.Href.StartsWith($"/forms/{formGroupCode}") || m.Href.StartsWith($"/forms/{formGroupCode}/") && !m.IsDeleted)
+                        .Where(m=>(m.Href==$"/forms/{formGroupCode}" || m.Href.StartsWith($"/forms/{formGroupCode}/")) && !m.IsDeleted)
                         .ToListAsync();
         if (!menus.Any())
         {

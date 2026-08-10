@@ -75,9 +75,18 @@ public class RoleService : IRoleService
             throw new ConflictException("Bu rol ismi zaten kullanılıyor.");   
         }
         Role role = MapToRole(dto);
-        _context.Roles.Add(role);
-        await _context.SaveChangesAsync();
-        await _authorizationService.CreateAuthorizationsForNewRoleAsync(role.RoleId);
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            _context.Roles.Add(role);
+            await _context.SaveChangesAsync();
+            await _authorizationService.CreateAuthorizationsForNewRoleAsync(role.RoleId);  
+            await transaction.CommitAsync(); 
+        }catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
         return MapToDto(role);
     }
 
@@ -86,7 +95,7 @@ public class RoleService : IRoleService
         Role? role = await _context.Roles
                         .Where(r=>r.RoleId==roleId)
                         .FirstOrDefaultAsync() ?? throw new ResourceNotFoundException("Güncelleme işlemi sırasında role bulunamadı");
-        if (!string.IsNullOrWhiteSpace(dto.RoleName) && (role.RoleName != dto.RoleName))
+        if (!string.IsNullOrWhiteSpace(dto.RoleName) && (role.RoleName != dto.RoleName) && role.RoleId!=roleId)
         {
             bool roleExists = await _context.Roles.AnyAsync(r=>r.RoleName==dto.RoleName);
             if (roleExists)
@@ -94,13 +103,22 @@ public class RoleService : IRoleService
                 throw new ConflictException("Bu rol ismi zaten kullanılıyor.");   
             }
         }
-        UpdateEntityFromDto(role,dto);
-        await _context.SaveChangesAsync();
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+        try 
+        {
+            UpdateEntityFromDto(role,dto);
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+        }catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
         return MapToDto(role);
     }
     public async Task DeleteRoleAsync(byte roleId)
     {
-        if (roleId == DefaultValues.DefaultAdminRoleId)
+        if (roleId == DefaultValues.DefaultAdminRoleId || roleId == DefaultValues.DefaultRoleId)
         {
             throw new BadRequestException("Admin rolü silinemez!");
         }

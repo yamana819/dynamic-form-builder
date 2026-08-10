@@ -135,9 +135,19 @@ public class FormService : IFormService
             throw new ConflictException("Bu form ismi zaten kullanılıyor.");
         }
         Form form = MapToForm(dto);
-        _context.Forms.Add(form);
-        await _context.SaveChangesAsync();
-        await _menuService.CreateMenuForFormAsync(form.FormId,form.FormGroupCode,form.FormName,creatorRoleId);
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            _context.Forms.Add(form);
+            await _context.SaveChangesAsync();
+            await _menuService.CreateMenuForFormAsync(form.FormId,form.FormGroupCode,form.FormName,creatorRoleId);
+            await transaction.CommitAsync();
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
         return MapToDto(form);
     }
 
@@ -155,8 +165,18 @@ public class FormService : IFormService
                 throw new ConflictException($"'{dto.FormName}' form ismi zaten kullanılıyor.");
             }
         }
-        await UpdateEntityFromDto(form,dto);
-        await _context.SaveChangesAsync();
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            await UpdateEntityFromDto(form,dto);
+            await _context.SaveChangesAsync();    
+            await transaction.CommitAsync();
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
         return MapToDto(form);
     }
     public async Task DeleteFormAsync(Guid formId)
@@ -165,8 +185,17 @@ public class FormService : IFormService
                         .Where(f=>f.FormId==formId && !f.IsDeleted)
                         .FirstOrDefaultAsync() ?? throw new ResourceNotFoundException("Silme işlemi sırasında form bulunamadı.");
         form.IsDeleted=true;
-        await _context.SaveChangesAsync();
-        await _menuService.DeleteMenuForFormAsync(form.FormId,form.FormGroupCode);
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            await _context.SaveChangesAsync();
+            await _menuService.DeleteMenuForFormAsync(form.FormId,form.FormGroupCode);
+            await transaction.CommitAsync();
+        }catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 
     public async Task<FormResponseDto> PublishFormAsync(Guid formId)

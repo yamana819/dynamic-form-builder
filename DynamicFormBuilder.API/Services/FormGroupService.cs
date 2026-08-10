@@ -87,9 +87,19 @@ public class FormGroupService : IFormGroupService
             throw new ConflictException("Form grup kodu zaten kullanılıyor.");
         }
         FormGroup formGroup = MapToFormGroup(dto);
-        _context.FormGroups.Add(formGroup);
-        await _context.SaveChangesAsync();
-        await _menuService.CreateMenuForFormGroupAsync(formGroup.FormGroupCode,formGroup.FormGroupName,creatorRoleId);
+        await using var transaction =await _context.Database.BeginTransactionAsync();
+        try
+        {
+            _context.FormGroups.Add(formGroup);
+            await _context.SaveChangesAsync();
+            await _menuService.CreateMenuForFormGroupAsync(formGroup.FormGroupCode,formGroup.FormGroupName,creatorRoleId);
+            await transaction.CommitAsync();
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
         return MapToDto(formGroup);
     }
     
@@ -108,8 +118,17 @@ public class FormGroupService : IFormGroupService
                 throw new ConflictException("Form grup ismi zaten kullanılıyor.");
             }
         }
-        await UpdateEntityFromDto(formGroup,dto);
-        await _context.SaveChangesAsync();
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            await UpdateEntityFromDto(formGroup,dto);
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+        }catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
         return MapToDto(formGroup);
     }
 
@@ -127,7 +146,17 @@ public class FormGroupService : IFormGroupService
                 form.IsDeleted=true;
             }
         }
-        await _context.SaveChangesAsync();
-        await _menuService.DeleteMenuForFormGroupAsync(formGroup.FormGroupCode);
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            await _context.SaveChangesAsync();
+            await _menuService.DeleteMenuForFormGroupAsync(formGroup.FormGroupCode);
+            await transaction.CommitAsync();
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 }
