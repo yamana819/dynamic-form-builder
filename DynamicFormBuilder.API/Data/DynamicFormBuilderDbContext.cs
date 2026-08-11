@@ -203,7 +203,7 @@ public partial class DynamicFormBuilderDbContext : DbContext
 
             entity.HasOne(d => d.Role).WithMany(p => p.Users)
                 .HasForeignKey(d => d.RoleId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("fk_user_key");
         });
 
