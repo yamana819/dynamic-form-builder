@@ -38,10 +38,10 @@ secrets.json
 *.key
 *.pem
 
-Frontend/node_modules/
+frontend/node_modules/
 node_modules/
-Frontend/dist/
-Frontend/.cache/
+frontend/dist/
+frontend/.cache/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
