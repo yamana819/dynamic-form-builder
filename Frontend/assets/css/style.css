@@ -1,0 +1,26 @@
+
+body {
+    background-color: #f4f6f9;
+}
+
+.sidebar {
+    width: 260px; 
+    height: 100vh; 
+    position: fixed; 
+    top: 0;
+    left: 0;
+    z-index: 1000; 
+    overflow-y: auto; 
+}
+
+.main-wrapper {
+    margin-left: 260px; 
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.content-area {
+    padding: 20px;
+    flex-grow: 1;
+}
