@@ -23,9 +23,9 @@ namespace DynamicFormBuilder.API.Controllers
         }
         [HttpGet]
         [RequirePermission("/forms",PermissionType.CanView)]
-        public async Task<IActionResult> GetAllFormGroups()
+        public async Task<IActionResult> GetAllFormGroups([FromQuery]int pageNumber=1,[FromQuery]int pageSize=50)
         {
-            var formGroups = await _formGroupService.GetAllFormGroupsAsync();
+            var formGroups = await _formGroupService.GetAllFormGroupsAsync(pageNumber,pageSize);
             return Ok(formGroups);
         }
         [HttpGet("{groupCode}")]

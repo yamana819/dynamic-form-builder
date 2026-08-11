@@ -44,7 +44,7 @@ public class FormGroupService : IFormGroupService
         {
             formGroup.FormGroupName=Regex.Replace(dto.FormGroupName,@"\s+"," ").Trim();
             await _menuService.UpdateMenuForFormGroupAsync(formGroup.FormGroupCode,formGroup.FormGroupName);
-            formGroup.LastUpdate=DateTime.UtcNow;
+            formGroup.LastUpdate=DateTime.Now;
         }
     }
 

@@ -21,12 +21,12 @@ namespace DynamicFormBuilder.API.Controllers
         }
     
         [HttpGet("forms/{formGroupCode}")]
-        public async Task<IActionResult> GetFormsByGroup(string formGroupCode)
+        public async Task<IActionResult> GetFormsByGroup(string formGroupCode,[FromQuery]int pageNumber=1,[FromQuery]int pageSize=50)
         {
             string href = _menuService.BuildHrefForFormGroup(formGroupCode);
             byte roleId = await GetCurrentUserRoleIdAsync();
             await _permissionService.CheckPermissionAsync(roleId,href,PermissionType.CanView);
-            var forms = await _formService.GetFormsByGroupAsync(formGroupCode);
+            var forms = await _formService.GetFormsByGroupAsync(formGroupCode,pageNumber,pageSize);
             return Ok(forms);
         }
         [HttpGet("{formId}")]

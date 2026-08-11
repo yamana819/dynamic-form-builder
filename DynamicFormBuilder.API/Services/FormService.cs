@@ -89,7 +89,7 @@ public class FormService : IFormService
         }
         if (isUpdated)
         {
-            form.LastUpdate=DateTime.UtcNow;
+            form.LastUpdate=DateTime.Now;
         }
     }
     public async Task<IEnumerable<FormResponseDto>> GetFormsByGroupAsync(string formGroupCode,int pageNumber=1,int pageSize=50)
@@ -208,7 +208,7 @@ public class FormService : IFormService
             throw new BadRequestException("Formu yayımlamadan önce verilerin kaydedileceği tablo view ismi ve primary key ismi girmek zorunludur");
         }
         form.IsPublished=true;
-        form.LastUpdate=DateTime.UtcNow;
+        form.LastUpdate=DateTime.Now;
         await _context.SaveChangesAsync();
         return MapToDto(form);
     }
