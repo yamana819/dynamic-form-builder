@@ -124,9 +124,9 @@ public class UserService : IUserService
                     .Include(u => u.Role)
                     .Where(u => u.UserId == userId && !u.IsDeleted)
                     .FirstOrDefaultAsync() ?? throw new ResourceNotFoundException("Güncelleme işlemi sırasında kullanıcı bulunamadı.");
-        if (!string.IsNullOrWhiteSpace(dto.UserName) && user.UserName != dto.UserName && user.UserId!=userId)
+        if (!string.IsNullOrWhiteSpace(dto.UserName) && user.UserName != dto.UserName)
         {
-            bool userExists = await _context.Users.AnyAsync(u=>u.UserName==dto.UserName);
+            bool userExists = await _context.Users.AnyAsync(u=>u.UserName==dto.UserName && u.UserId!=userId);
             if (userExists)
             {
                 throw new ConflictException($"'{dto.UserName}' kullanıcı adı zaten kullanılıyor.");
@@ -179,6 +179,14 @@ public class UserService : IUserService
                     .Where(u=>u.UserId==userId)
                     .Include(u=>u.Role)
                     .FirstOrDefaultAsync() ?? throw new ResourceNotFoundException("Güncelleme işlemi sırasında kullanıcı bulunamadı(ADMIN)");
+        if (!string.IsNullOrWhiteSpace(dto.UserName) && user.UserName != dto.UserName)
+        {
+            bool userExists = await _context.Users.AnyAsync(u=>u.UserName==dto.UserName && u.UserId!=userId);
+            if (userExists)
+            {
+                throw new ConflictException($"'{dto.UserName}' kullanıcı adı zaten kullanılıyor.");
+            }
+        }
         AdminUpdateEntityFromDto(user,dto);
         await _context.SaveChangesAsync();
         return MapToAdminDto(user);

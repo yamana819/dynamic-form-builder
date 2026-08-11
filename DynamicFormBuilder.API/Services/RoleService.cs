@@ -95,9 +95,9 @@ public class RoleService : IRoleService
         Role? role = await _context.Roles
                         .Where(r=>r.RoleId==roleId)
                         .FirstOrDefaultAsync() ?? throw new ResourceNotFoundException("Güncelleme işlemi sırasında role bulunamadı");
-        if (!string.IsNullOrWhiteSpace(dto.RoleName) && (role.RoleName != dto.RoleName) && role.RoleId!=roleId)
+        if (!string.IsNullOrWhiteSpace(dto.RoleName) && role.RoleName != dto.RoleName)
         {
-            bool roleExists = await _context.Roles.AnyAsync(r=>r.RoleName==dto.RoleName);
+            bool roleExists = await _context.Roles.AnyAsync(r=>r.RoleName==dto.RoleName && r.RoleId!=roleId);
             if (roleExists)
             {
                 throw new ConflictException("Bu rol ismi zaten kullanılıyor.");   
