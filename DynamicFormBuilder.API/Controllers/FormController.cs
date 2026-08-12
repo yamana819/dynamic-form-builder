@@ -2,6 +2,7 @@ using DynamicFormBuilder.API.DTOs.Form;
 using DynamicFormBuilder.API.Services;
 using Microsoft.AspNetCore.Mvc;
 using DynamicFormBuilder.API.Constants;
+using DynamicFormBuilder.API.Models;
 
 namespace DynamicFormBuilder.API.Controllers
 {
@@ -33,7 +34,9 @@ namespace DynamicFormBuilder.API.Controllers
         public async Task<IActionResult> GetForm(Guid formId)
         {
             byte roleId = await GetCurrentUserRoleIdAsync();
-            await _permissionService.CheckPermissionForFormAsync(roleId,formId,PermissionType.CanView);
+            string formGroupCode = await _formService.GetFormGroupCodeByFormIdAsync(formId);
+            string href = _menuService.BuildHrefForFormGroup(formGroupCode);
+            await _permissionService.CheckPermissionAsync(roleId,href,PermissionType.CanView);
             FormResponseDto form = await _formService.GetFormAsync(formId);
             return Ok(form);
         }
@@ -50,7 +53,9 @@ namespace DynamicFormBuilder.API.Controllers
         public async Task<IActionResult> UpdateForm(Guid formId,FormUpdateDto dto)
         {
             byte roleId = await GetCurrentUserRoleIdAsync();
-            await _permissionService.CheckPermissionForFormAsync(roleId,formId,PermissionType.CanEdit);
+            string formGroupCode = await _formService.GetFormGroupCodeByFormIdAsync(formId);
+            string href = _menuService.BuildHrefForFormGroup(formGroupCode);
+            await _permissionService.CheckPermissionAsync(roleId,href,PermissionType.CanEdit);
             FormResponseDto form = await _formService.UpdateFormAsync(formId,dto);
             return Ok(form);
         }
@@ -58,7 +63,9 @@ namespace DynamicFormBuilder.API.Controllers
         public async Task<IActionResult> PublishForm(Guid formId)
         {
             byte roleId = await GetCurrentUserRoleIdAsync();
-            await _permissionService.CheckPermissionForFormAsync(roleId,formId,PermissionType.CanEdit);
+            string formGroupCode = await _formService.GetFormGroupCodeByFormIdAsync(formId);
+            string href = _menuService.BuildHrefForFormGroup(formGroupCode);
+            await _permissionService.CheckPermissionAsync(roleId,href,PermissionType.CanEdit);
             FormResponseDto form = await _formService.PublishFormAsync(formId);
             return Ok(form);
         }
@@ -67,7 +74,9 @@ namespace DynamicFormBuilder.API.Controllers
         public async Task<IActionResult> DeleteForm(Guid formId)
         {
             byte roleId = await GetCurrentUserRoleIdAsync();
-            await _permissionService.CheckPermissionForFormAsync(roleId,formId,PermissionType.CanDelete);
+            string formGroupCode = await _formService.GetFormGroupCodeByFormIdAsync(formId);
+            string href = _menuService.BuildHrefForFormGroup(formGroupCode);
+            await _permissionService.CheckPermissionAsync(roleId,href,PermissionType.CanDelete);
             await _formService.DeleteFormAsync(formId);
             return NoContent();
         }
