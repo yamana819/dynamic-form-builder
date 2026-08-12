@@ -14,8 +14,11 @@ public class FormService : IFormService
     
     private readonly IMenuService _menuService;
 
-    public FormService(DynamicFormBuilderDbContext context,IMenuService menuService)
+    private readonly ISchemaService _schemaService;
+
+    public FormService(DynamicFormBuilderDbContext context,IMenuService menuService,ISchemaService schemaService)
     {
+        _schemaService=schemaService;
         _context=context;
         _menuService=menuService;
     }
@@ -79,6 +82,7 @@ public class FormService : IFormService
         }
         if (!string.IsNullOrWhiteSpace(dto.ViewName) && (form.ViewName!=dto.ViewName))
         {
+            await _schemaService.ValidateViewExistsAsync(dto.ViewName);
             form.ViewName=dto.ViewName;
             isUpdated=true;
         }
@@ -91,6 +95,14 @@ public class FormService : IFormService
         {
             form.LastUpdate=DateTime.Now;
         }
+    }
+    public async Task<string> GetFormGroupCodeByFormIdAsync(Guid formId)
+    {
+        var formGroupCode = await _context.Forms
+                                .Where(f=>f.FormId==formId && !f.IsDeleted)
+                                .Select(f=>f.FormGroupCode)
+                                .FirstOrDefaultAsync() ?? throw new ResourceNotFoundException("Grup kodu getirilirken form bulunamadı.");
+        return formGroupCode;
     }
     public async Task<IEnumerable<FormResponseDto>> GetFormsByGroupAsync(string formGroupCode,int pageNumber=1,int pageSize=50)
     {
@@ -203,10 +215,11 @@ public class FormService : IFormService
         Form? form = await _context.Forms
                         .Where(f=>f.FormId==formId && !f.IsDeleted)
                         .FirstOrDefaultAsync() ?? throw new ResourceNotFoundException("Yayınlama işlemi sırasında form bulunamadı.");
-        if (string.IsNullOrWhiteSpace(form.TargetTableName) || string.IsNullOrWhiteSpace(form.TargetPrimaryKey) || string.IsNullOrWhiteSpace(form.ViewName))
+        if (string.IsNullOrWhiteSpace(form.TargetTableName) || string.IsNullOrWhiteSpace(form.TargetPrimaryKey))
         {
-            throw new BadRequestException("Formu yayımlamadan önce verilerin kaydedileceği tablo view ismi ve primary key ismi girmek zorunludur");
+            throw new BadRequestException("Formu yayımlamadan önce verilerin kaydedileceği tablo ve primary key ismi girmek zorunludur");
         }
+        await _schemaService.ValidatePublishRequirementsAsync(form.TargetTableName,form.TargetPrimaryKey,form.ViewName,form.FormSchema);
         form.IsPublished=true;
         form.LastUpdate=DateTime.Now;
         await _context.SaveChangesAsync();
