@@ -3,6 +3,7 @@ using DynamicFormBuilder.API.Middleware;
 using DynamicFormBuilder.API.Data;
 using DynamicFormBuilder.API.Models;
 using DynamicFormBuilder.API.Services;
+using DynamicFormBuilder.API.Data.Helpers;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -61,7 +62,10 @@ builder.Services.AddScoped<IFormService, FormService>();
 builder.Services.AddScoped<IMenuService, MenuService>();
 builder.Services.AddScoped<IPermissionService, PermissionService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
+builder.Services.AddScoped<ISchemaService, FormSchemaValidator>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<SqlHelper>();
+builder.Services.AddScoped<IRecordService, RecordService>();
 
 var jwtSecretKey = builder.Configuration["JwtSettings:SecretKey"]
     ?? throw new InvalidOperationException("JwtSettings:SecretKey bulunamadı.");
