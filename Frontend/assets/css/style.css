@@ -1,6 +1,6 @@
 
 body {
-    background-color: #f4f6f9;
+    background-color: #f9f9f9;
 }
 
 .sidebar {
@@ -10,7 +10,8 @@ body {
     top: 0;
     left: 0;
     z-index: 1000; 
-    overflow-y: auto; 
+    overflow-y: auto;
+    background-color: #1a1f36;
 }
 
 .main-wrapper {

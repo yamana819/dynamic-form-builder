@@ -1,0 +1,73 @@
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Tasarım Ekranı</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="/frontend/assets/css/style.css" />
+    <link rel="stylesheet" href="https://cdn.form.io/formiojs/4.19.1/formio.full.min.css" />
+</head>
+<body class="bg-light">
+    <div id="sidebar-placeholder"></div>
+    <div class="main-wrapper">
+        <div id="header-placeholder"></div>
+        <div class="content-area">
+            <div class="container-fluid mt-4">
+                
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="fw-bold text-dark mb-0" id="design-page-title">Form Tasarımı</h2>
+                        <span class="text-muted" id="design-page-subtitle">Yükleniyor...</span>
+                    </div>
+                    <div>
+                        <a href="javascript:history.back()" class="btn btn-secondary me-2">İptal</a>
+                        <button class="btn btn-primary shadow-sm" id="btn-save-form">
+                            <i class="bi bi-save me-1"></i> Formu Kaydet
+                        </button>
+                    </div>
+                </div>
+                <div id="form-error-alert" class="alert alert-danger d-none" role="alert"></div>
+                <div class="card shadow-sm border-0 bg-white rounded-3 mb-4">
+                    <div class="card-header bg-white border-bottom fw-bold text-primary">
+                        <i class="bi bi-info-circle me-1"></i>Form Bilgileri
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="formName" class="form-label fw-medium">Form Adı <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="formName" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="targetTableName" class="form-label fw-medium">Hedef Tablo Adı (Opsiyonel-Yayımlamak İçin Gerekli)</label>
+                                <input type="text" class="form-control" id="targetTableName">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="targetPrimaryKey" class="form-label fw-medium">Hedef Primary Key (Opsiyonel-Yayımlamak İçin Gerekli)</label>
+                                <input type="text" class="form-control" id="targetPrimaryKey">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="viewName" class="form-label fw-medium">View Adı (Opsiyonel-Yayımlamak İçin Gerekli)</label>
+                                <input type="text" class="form-control" id="viewName">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card shadow-sm border-0 bg-white rounded-3 mb-5">
+                    <div class="card-header bg-white border-bottom fw-bold text-primary">
+                        <i class="bi bi-grid-1x2 me-1"></i> Form Tasarımı
+                    </div>
+                    <div class="card-body p-0">
+                        <div id="builder" class="p-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.form.io/formiojs/4.19.1/formio.full.min.js"></script>
+    
+    <script src="/frontend/js/shared/layout.js"></script>
+    <script type="module" src="/frontend/js/pages/forms/design.js"></script>
+</body>
+</html>

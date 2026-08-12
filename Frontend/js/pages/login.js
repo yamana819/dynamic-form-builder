@@ -25,6 +25,7 @@ form.addEventListener('submit', async (e) => {
     try {
         const response = await api.post('/Authentication/login', { userName, password });
         localStorage.setItem('token', response.token);
+        localStorage.setItem('userName', userName);
 
         const menus = await api.get('/Menu/me');
         sessionStorage.setItem('user_menus', JSON.stringify(menus));

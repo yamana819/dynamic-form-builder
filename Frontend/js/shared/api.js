@@ -24,19 +24,30 @@ async function request(endpoint, options = {}) {
     if ((response.status === 401)) {
       removeToken();
       sessionStorage.clear();
-      window.location.href="frontend/pages/login.html";
+      window.location.href="/frontend/pages/login.html";
       throw new Error("Oturum süreniz doldu.");
     }
     if ((response.status === 403)) {
-      alert("Bu işlem için yetkiniz yok.");
-      throw new Error("");
+      localStorage.removeItem('user_menus');
+      sessionStorage.removeItem('user_menus');
+      alert("Yetkileriniz güncellenmiş sayfa yenileniyor...");
+      window.location.reload();
+      throw new Error("Forbidden:Bu işlem için yetkiniz yok.");
     }
     if ((response.status === 204)) {
       return null;
     }
-    const data = await response.json();
+    let data = null;
+    const text = await response.text();
+    if (text) {
+      try {
+        data = JSON.parse(text);
+      } catch {
+        data = null; 
+      }
+    }
     if (!response.ok) {
-      throw new Error(data.message);
+      throw new Error(data?.message || `HTTP ${response.status} hatası`);
     }
     return data;
   } catch (error) {
