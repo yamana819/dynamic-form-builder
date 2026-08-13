@@ -17,6 +17,8 @@ public interface IFormService
     Task DeleteFormAsync(Guid formId);
 
     Task<FormResponseDto> PublishFormAsync(Guid formId);
+    
+    Task<FormResponseDto> UnpublishFormAsync(Guid formId);
 
     Task<string> GetFormGroupCodeByFormIdAsync(Guid formId);
 }
