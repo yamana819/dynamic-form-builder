@@ -214,21 +214,25 @@ window.openFormsModal = async (formGroupCode, formGroupName) => {
         }
 
         forms.forEach(form => {
-            const formName = form.formName || form.FormName;
-            const formId = form.formId || form.FormId;
-            const isPublished = form.isPublished || form.IsPublished;
-            const createdAt = new Date(form.createdAt || form.CreatedAt).toLocaleDateString();
+            const formName = form.formName;
+            const formId = form.formId;
+            const isPublished = form.isPublished;
+            const createdAt = new Date(form.createdAt).toLocaleDateString();
 
             const statusBadge = isPublished 
                 ? `<span class="badge bg-success">Yayında</span>`
                 : `<span class="badge bg-secondary">Taslak</span>`;
-
-            // Eğer form yayınlanmamışsa "Yayınla" butonu göster
             let publishButton = '';
             if (!isPublished) {
                 publishButton = `
                     <button class="btn btn-sm btn-outline-success me-1" onclick="publishForm('${formId}')" title="Yayınla">
                         <i class="bi bi-cloud-arrow-up"></i>
+                    </button>
+                `;
+            } else {
+                publishButton = `
+                    <button class="btn btn-sm btn-outline-secondary me-1" onclick="unpublishForm('${formId}')" title="Yayından Kaldır">
+                        <i class="bi bi-cloud-arrow-down"></i>
                     </button>
                 `;
             }
@@ -261,6 +265,8 @@ window.deleteForm = async (formId) => {
     if (confirm("Bu formu silmek istediğinize emin misiniz? Bu işlem geri alınamaz.")) {
         try {
             await api.delete(`/Form/${formId}`);
+            await refreshUserMenus();
+            if (window.refreshSidebarMenu) window.refreshSidebarMenu();
             if (currentActiveGroupCode) {
                 window.openFormsModal(currentActiveGroupCode); 
             }
@@ -279,6 +285,19 @@ window.publishForm = async (formId) => {
             }
         } catch (error) {
             alert("Yayınlama hatası: " + error.message);
+        }
+    }
+};
+
+window.unpublishForm = async (formId) => {
+    if (confirm("Bu formu yayından kaldırmak istediğinize emin misiniz? Form tekrar Taslak durumuna dönecektir.")) {
+        try {
+            await api.patch(`/Form/unpublish-form/${formId}`);
+            if (currentActiveGroupCode) {
+                window.openFormsModal(currentActiveGroupCode); 
+            }
+        } catch (error) {
+            alert("Yayından kaldırma hatası: " + error.message);
         }
     }
 };

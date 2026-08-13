@@ -20,14 +20,14 @@ async function initDesignScreen() {
     if (formId) {
         try {
             const formData = await api.get(`/Form/${formId}`);
-            currentFormGroupCode = formData.formGroupCode || formData.FormGroupCode;
+            currentFormGroupCode = formData.formGroupCode;
             pageTitle.textContent = "Formu Düzenle";
-            pageSubtitle.textContent = `Form ID: ${formId}`;
-            inputFormName.value = formData.formName || formData.FormName || '';
-            inputTargetTableName.value = formData.targetTableName || formData.TargetTableName || '';
-            inputTargetPrimaryKey.value = formData.targetPrimaryKey || formData.TargetPrimaryKey || '';
-            inputViewName.value = formData.viewName || formData.ViewName || '';
-            const formSchemaString = formData.formSchema || formData.FormSchema;
+            pageSubtitle.textContent = `Form Grup Kodu: ${currentFormGroupCode}`;
+            inputFormName.value = formData.formName || '';
+            inputTargetTableName.value = formData.targetTableName || '';
+            inputTargetPrimaryKey.value = formData.targetPrimaryKey || '';
+            inputViewName.value = formData.viewName || '';
+            const formSchemaString = formData.formSchema;
             if (formSchemaString) {
                 const schemaJson = JSON.parse(formSchemaString);
                 formioBuilderInstance.setForm(schemaJson);
@@ -75,6 +75,14 @@ btnSaveForm.addEventListener('click', async () => {
             payload.formGroupCode = currentFormGroupCode;
             await api.post('/Form', payload);
             alert("Yeni form başarıyla oluşturuldu!");
+        }
+        try {
+            const newMenus = await api.get('/Menu/me');
+            if (sessionStorage.getItem('user_menus')) sessionStorage.setItem('user_menus', JSON.stringify(newMenus));
+            if (localStorage.getItem('user_menus')) localStorage.setItem('user_menus', JSON.stringify(newMenus));
+            if (window.refreshSidebarMenu) window.refreshSidebarMenu();
+        } catch (e) {
+            console.error("Menü yenilenemedi:", e);
         }
         window.history.back();
     } catch (error) {

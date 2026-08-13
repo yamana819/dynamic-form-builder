@@ -13,11 +13,15 @@ async function loadPartial(url, elementId) {
 function buildFrontendUrl(href) {
     if (!href || href === '#') return '#';
     const parts = href.split('/').filter(Boolean);
-    if (parts.length === 0) return '/frontend/pages/dashboard.html';
+    
     if (parts[0] === 'forms') {
         if (!parts[1]) {
             return '/frontend/pages/form-groups.html';
         }
+        if (parts[2]) {
+            return `/frontend/pages/forms/form-data.html?formId=${parts[2]}&groupCode=${parts[1]}`;
+        }
+        
         const base = '/frontend/pages/forms/index.html'; 
         return `${base}?code=${parts[1]}`;
     }
@@ -97,6 +101,8 @@ async function initLayout() {
     await loadPartial('/frontend/partials/sidebar.html', 'sidebar-placeholder');
     await loadPartial('/frontend/partials/header.html', 'header-placeholder');
     renderLayoutData();
+    // Layout tam yüklendikten sonra sayfayı görünür yap (Göz kırpmayı önler)
+    document.body.classList.add('loaded');
 }
 window.refreshSidebarMenu = renderLayoutData;
 initLayout();

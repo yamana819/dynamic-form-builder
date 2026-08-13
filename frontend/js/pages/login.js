@@ -40,13 +40,13 @@ form.addEventListener('submit', async (e) => {
 });
 
 function showError(message) {
-    errorBox.textContent = message;
+    errorBox.innerHTML = message;
     errorBox.classList.remove('d-none');
 }
 
 function hideError() {
     errorBox.classList.add('d-none');
-    errorBox.textContent = '';
+    errorBox.innerHTML = '';
 }
 
 function setLoading(isLoading) {

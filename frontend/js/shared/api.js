@@ -24,8 +24,12 @@ async function request(endpoint, options = {}) {
     if ((response.status === 401)) {
       removeToken();
       sessionStorage.clear();
-      window.location.href="/frontend/pages/login.html";
-      throw new Error("Oturum süreniz doldu.");
+      
+      // Eğer zaten login isteği yapıyorsak (şifre yanlışsa), sayfayı yenileme.
+      if (!endpoint.toLowerCase().includes('login')) {
+          window.location.href="/frontend/pages/login.html";
+          throw new Error("Oturum süreniz doldu.");
+      }
     }
     if ((response.status === 403)) {
       localStorage.removeItem('user_menus');
@@ -47,7 +51,11 @@ async function request(endpoint, options = {}) {
       }
     }
     if (!response.ok) {
-      throw new Error(data?.message || `HTTP ${response.status} hatası`);
+      let errorMsg = data?.message || `HTTP ${response.status} hatası`;
+      if (data?.errors && Array.isArray(data.errors) && data.errors.length > 0) {
+        errorMsg = data.errors.join('<br>');
+      }
+      throw new Error(errorMsg);
     }
     return data;
   } catch (error) {

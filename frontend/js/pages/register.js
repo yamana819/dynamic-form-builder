@@ -50,13 +50,13 @@ form.addEventListener('submit', async (e) => {
 
 function showError(message) {
     registerError.className = 'alert alert-danger';
-    registerError.textContent = message;
+    registerError.innerHTML = message;
     registerError.classList.remove('d-none');
 }
 
 function showSuccess(message) {
     registerError.className = 'alert alert-success';
-    registerError.textContent = message;
+    registerError.innerHTML = message;
     registerError.classList.remove('d-none');
 }
 

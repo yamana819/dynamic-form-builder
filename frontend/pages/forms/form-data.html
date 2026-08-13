@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Form Kayıtları - Dinamik Form</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="/frontend/assets/css/style.css" />
+    <link rel="stylesheet" href="https://cdn.form.io/formiojs/4.19.1/formio.full.min.css" />
+    <style>
+      .text-truncate-custom {
+        max-width: 200px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .clickable-row {
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="sidebar-placeholder"></div>
+    <div class="main-wrapper">
+      <div id="header-placeholder"></div>
+      <div class="content-area">
+        <div class="container-fluid mt-4">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <h2 class="fw-bold text-dark mb-1" id="form-title">Form Kayıtları</h2>
+              <p class="text-muted mb-0" id="form-subtitle">Form verileri yükleniyor...</p>
+            </div>
+            <button id="btn-add-record" class="btn btn-primary shadow-sm d-none">
+              <i class="bi bi-plus-lg me-1"></i> Yeni Kayıt Ekle
+            </button>
+          </div>
+          
+          <div class="card shadow-sm border-0 bg-white rounded-3">
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="records-table">
+                  <thead class="table-light">
+                    <tr id="records-thead-tr">
+                    </tr>
+                  </thead>
+                  <tbody id="records-tbody">
+                    <tr>
+                      <td class="text-center py-5 text-muted" id="loading-row">
+                        <div class="spinner-border spinner-border-sm text-primary me-2"></div>
+                        Veriler yükleniyor...
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Silme Onay Modalı -->
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 shadow">
+          <div class="modal-body p-4 text-center">
+            <i class="bi bi-exclamation-circle text-danger" style="font-size: 3rem;"></i>
+            <h5 class="mt-3 fw-bold">Emin misiniz?</h5>
+            <p class="text-muted mb-4">Bu kayıt kalıcı olarak silinecektir.</p>
+            <div class="d-flex justify-content-center gap-2">
+              <button type="button" class="btn btn-light" data-bs-dismiss="modal">İptal</button>
+              <button type="button" class="btn btn-danger" id="btn-confirm-delete">Evet, Sil</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/frontend/js/shared/layout.js"></script>
+    <script type="module" src="/frontend/js/pages/forms/form-data.js"></script>
+  </body>
+</html>
