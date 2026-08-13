@@ -7,6 +7,7 @@ using System.Data;
 using System.Text.RegularExpressions;
 using System.Security;
 using DynamicFormBuilder.API.Exceptions;
+using System.Text.Json;
 
 namespace DynamicFormBuilder.API.Data.Helpers
 {
@@ -18,6 +19,37 @@ namespace DynamicFormBuilder.API.Data.Helpers
         {
             _connectionString = configuration.GetConnectionString("DefaultConnection")
             ?? throw new BadRequestException("Appsettings.json içerisinde bağlantı dizeciği bulunamadı!");//Eğer DefaultConnectionum boşsa veya yoksa hata fırlattık.    
+        }
+        
+        // ASP.NET Core, request body'deki dinamik json değerlerini JsonElement olarak parse eder. 
+        // SqlClient JsonElement tipini tanımadığı için bunları native C# tiplerine çevirmemiz gerekir.
+        private object GetValue(object? value)
+        {
+            if (value is JsonElement jsonElement)
+            {
+                switch (jsonElement.ValueKind)
+                {
+                    case JsonValueKind.String:
+                        string? strValue = jsonElement.GetString();
+                        // SQL Server "2026-08-21 12:00 PM" gibi tarihleri bazen string olarak kabul etmez.
+                        // Bu yüzden C# tarafında tarihe çevirip SQL'e gerçek bir "DateTime" objesi yolluyoruz.
+                        if (DateTime.TryParse(strValue, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out DateTime dt))
+                        {
+                            return dt;
+                        }
+                        return strValue ?? (object)DBNull.Value;
+                    case JsonValueKind.Number:
+                        if (jsonElement.TryGetInt32(out int i)) return i;
+                        if (jsonElement.TryGetInt64(out long l)) return l;
+                        if (jsonElement.TryGetDouble(out double d)) return d;
+                        return jsonElement.GetDecimal();
+                    case JsonValueKind.True: return true;
+                    case JsonValueKind.False: return false;
+                    case JsonValueKind.Null: return DBNull.Value;
+                    default: return jsonElement.GetRawText(); // İç içe obje (adres vb.) veya array ise direkt string (JSON) olarak ver.
+                }
+            }
+            return value ?? DBNull.Value;
         }
         //Sql injectiondan korunmak için regex ve boş identifier kontrolleri.
         private string SanitizeIdentifier(string identifier)
@@ -113,7 +145,7 @@ namespace DynamicFormBuilder.API.Data.Helpers
                 columnNames.Add(checkedColumnName);
                 string parameterName = "@" + item.Key;
                 parameterNames.Add(parameterName);
-                object parameterValue = item.Value ?? DBNull.Value;
+                object parameterValue = GetValue(item.Value);
                 parameters.Add(new SqlParameter(parameterName, parameterValue));
             });
             string columnString = string.Join(",", columnNames);//Aralarda , olacak şekilde attribute namelerimizi joinliyoruz.
@@ -143,7 +175,7 @@ namespace DynamicFormBuilder.API.Data.Helpers
                 string checkedColumnName = SanitizeIdentifier(item.Key);
                 string parameterName = $"@{item.Key}";
                 setClauses.Add($"{checkedColumnName}={parameterName}");
-                object parameterValue = item.Value ?? DBNull.Value;
+                object parameterValue = GetValue(item.Value);
                 parameters.Add(new SqlParameter(parameterName, parameterValue));
             });
             string setClausesString = string.Join(",", setClauses);
