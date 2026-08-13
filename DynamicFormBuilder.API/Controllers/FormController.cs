@@ -70,6 +70,17 @@ namespace DynamicFormBuilder.API.Controllers
             return Ok(form);
         }
 
+        [HttpPatch("unpublish-form/{formId}")]
+        public async Task<IActionResult> UnpublishForm(Guid formId)
+        {
+            byte roleId = await GetCurrentUserRoleIdAsync();
+            string formGroupCode = await _formService.GetFormGroupCodeByFormIdAsync(formId);
+            string href = _menuService.BuildHrefForFormGroup(formGroupCode);
+            await _permissionService.CheckPermissionAsync(roleId,href,PermissionType.CanEdit);
+            FormResponseDto form = await _formService.UnpublishFormAsync(formId);
+            return Ok(form);
+        }
+
         [HttpDelete("{formId}")]
         public async Task<IActionResult> DeleteForm(Guid formId)
         {
