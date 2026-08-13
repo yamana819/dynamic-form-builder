@@ -225,4 +225,22 @@ public class FormService : IFormService
         await _context.SaveChangesAsync();
         return MapToDto(form);
     }
+
+    public async Task<FormResponseDto> UnpublishFormAsync(Guid formId)
+    {
+        Form? form = await _context.Forms
+                        .Where(f=>f.FormId==formId && !f.IsDeleted)
+                        .FirstOrDefaultAsync() ?? throw new ResourceNotFoundException("İşlem sırasında form bulunamadı.");
+        
+        if (!form.IsPublished)
+        {
+            throw new BadRequestException("Bu form zaten yayında değil.");
+        }
+
+        form.IsPublished = false;
+        form.LastUpdate = DateTime.Now;
+        await _context.SaveChangesAsync();
+        
+        return MapToDto(form);
+    }
 }
