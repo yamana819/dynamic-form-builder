@@ -33,7 +33,7 @@ public class AuthorizationService : IAuthorizationService
     public async Task<IEnumerable<AuthorizationResponseDto>> GetAuthorizationsByRoleIdAsync(byte roleId)
     {
         return await _context.Authorizations
-                .Where(a=>a.RoleId==roleId)
+                .Where(a => a.RoleId == roleId && !a.Menu.IsDeleted)
                 .Select(a=> new AuthorizationResponseDto
                 {
                     MenuId = a.MenuId,
@@ -49,6 +49,11 @@ public class AuthorizationService : IAuthorizationService
 
     public async Task<IEnumerable<AuthorizationResponseDto>> UpdateAuthorizationsAsync(byte roleId,IEnumerable<AuthorizationUpdateDto> dtos)
     {
+        if (roleId == DefaultValues.DefaultAdminRoleId)
+        {
+            throw new BadRequestException("Sistem yöneticisi (Admin) yetkileri değiştirilemez!");
+        }
+
         var authorizations = await _context.Authorizations
                                 .Where(a=>a.RoleId==roleId)
                                 .Include(a=>a.Menu)
