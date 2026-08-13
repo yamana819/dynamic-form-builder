@@ -17,16 +17,30 @@ public class RecordService : IRecordService
         _sqlHelper=sqlHelper;
     }
 
-    public async Task<DataTable> GetAllRecordsAsync(Guid formId)
+    public async Task<object> GetAllRecordsAsync(Guid formId)
     {
         var viewName = await _context.Forms
                             .Where(f=>f.FormId==formId && !f.IsDeleted && f.IsPublished)
                             .Select(f=>f.ViewName)
                             .FirstOrDefaultAsync() ?? throw new ResourceNotFoundException("Form bulunamadı veya henüz yayımlanmamış.");
-        var data = await _sqlHelper.GetAllRecordsAsync(viewName);
-        return data;
+        var dataTable = await _sqlHelper.GetAllRecordsAsync(viewName);
+        
+        var columns = dataTable.Columns.Cast<DataColumn>().Select(c => c.ColumnName).ToList();
+        var rows = new List<Dictionary<string, object>>();
+        
+        foreach (DataRow row in dataTable.Rows)
+        {
+            var dict = new Dictionary<string, object>();
+            foreach (DataColumn col in dataTable.Columns)
+            {
+                dict[col.ColumnName] = row[col] == DBNull.Value ? null : row[col];
+            }
+            rows.Add(dict);
+        }
+        
+        return new { columns = columns, rows = rows };
     }
-    public async Task<Dictionary<string,object>?> GetRecordByIdAsync(Guid formId,object recordId)
+    public async Task<Dictionary<string,object>?> GetRecordByIdAsync(Guid formId,string recordId)
     {
         var form = await _context.Forms
                             .Where(f=>f.FormId==formId && !f.IsDeleted && f.IsPublished)
@@ -41,14 +55,14 @@ public class RecordService : IRecordService
                             .FirstOrDefaultAsync() ?? throw new ResourceNotFoundException("Form bulunamadı veya henüz yayımlanmamış.");
         return await _sqlHelper.InsertRecordFromJson(tableName,formData); 
     }
-    public async Task<int> UpdateRecordAsync(Guid formId,object recordId,Dictionary<string,object> formData)
+    public async Task<int> UpdateRecordAsync(Guid formId,string recordId,Dictionary<string,object> formData)
     {
         var form = await _context.Forms
                             .Where(f=>f.FormId==formId && !f.IsDeleted && f.IsPublished)
                             .FirstOrDefaultAsync() ?? throw new ResourceNotFoundException("Form bulunamadı veya henüz yayımlanmamış.");
         return await _sqlHelper.UpdateRecordFromJson(form.TargetTableName,form.TargetPrimaryKey,recordId,formData);
     }
-    public async Task<int> DeleteRecordAsync(Guid formId, object recordId)
+    public async Task<int> DeleteRecordAsync(Guid formId, string recordId)
     {
         var form = await _context.Forms
                             .Where(f=>f.FormId==formId && !f.IsDeleted && f.IsPublished)
