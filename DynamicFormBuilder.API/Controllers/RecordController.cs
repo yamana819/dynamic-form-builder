@@ -26,7 +26,7 @@ namespace DynamicFormBuilder.API.Controllers
             return Ok(result);
         }
         [HttpGet("{formId}/records/{recordId}")]
-        public async Task<IActionResult> GetRecordById(Guid formId, object recordId)
+        public async Task<IActionResult> GetRecordById(Guid formId, string recordId)
         {
             var roleId = await GetCurrentUserRoleIdAsync();
             await _permissionService.CheckPermissionForFormAsync(roleId,formId,PermissionType.CanView);
@@ -38,7 +38,7 @@ namespace DynamicFormBuilder.API.Controllers
             return Ok(result);
         }
         [HttpPost("{formId}")]
-        public async Task<IActionResult> InsertRecord(Guid formId,Dictionary<string,object> formData)
+        public async Task<IActionResult> InsertRecord(Guid formId,[FromBody]Dictionary<string,object> formData)
         {
             var roleId = await GetCurrentUserRoleIdAsync();
             await _permissionService.CheckPermissionForFormAsync(roleId,formId,PermissionType.CanCreate);
@@ -50,7 +50,7 @@ namespace DynamicFormBuilder.API.Controllers
             return StatusCode(201,result);
         }
         [HttpPatch("{formId}/records/{recordId}")]
-        public async Task<IActionResult> UpdateRecord(Guid formId, object recordId, Dictionary<string, object> formData)
+        public async Task<IActionResult> UpdateRecord(Guid formId, string recordId,[FromBody] Dictionary<string, object> formData)
         {
             var roleId = await GetCurrentUserRoleIdAsync();
             await _permissionService.CheckPermissionForFormAsync(roleId,formId,PermissionType.CanEdit);
@@ -62,7 +62,7 @@ namespace DynamicFormBuilder.API.Controllers
             return Ok(result);
         }
         [HttpDelete("{formId}/records/{recordId}")]
-        public async Task<IActionResult> DeleteRecord(Guid formId, object recordId)
+        public async Task<IActionResult> DeleteRecord(Guid formId, string recordId)
         {
             var roleId = await GetCurrentUserRoleIdAsync();
             await _permissionService.CheckPermissionForFormAsync(roleId,formId,PermissionType.CanDelete);
