@@ -24,7 +24,7 @@ The repository is strictly divided into two decoupled monolithic layers: the Bac
 ### 1. `Scripts/` (Database Initialization)
 The project adopts a **Database-First** approach (or manual schema design) for its core structural tables (Users, Roles, Menus, Permissions). Instead of relying on EF Core Migrations, the initial database schema and seed data are strictly maintained through raw SQL scripts.
 
-* **`Scripts/`**: Contains raw SQL files (e.g., `add_seed_data.sql`, `rerefences.sql`) necessary to bootstrap the database schema, constraints, and default administrative data before running the backend.
+* **`Scripts/`**: Contains raw SQL files (e.g., `add_seed_data.sql`, `references.sql`) necessary to bootstrap the database schema, constraints, and default administrative data before running the backend.
 
 ### 2. `DynamicFormBuilder.API/` (Backend Layer)
 Built on **.NET 10** and **Entity Framework Core**, this layer acts as the brain of the application. It handles routing, business logic, security, and dynamic database interactions.
