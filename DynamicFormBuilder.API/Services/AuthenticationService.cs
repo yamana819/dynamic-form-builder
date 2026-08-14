@@ -29,7 +29,6 @@ public class AuthenticationService:IAuthenticationService
     {
         var user = await _context.Users
                     .Where(u=>u.UserName==dto.UserName && !u.IsDeleted)
-                    .AsNoTracking()
                     .FirstOrDefaultAsync() ?? throw new AuthenticationFailedException("Kullanıcı adı veya şifre yanlış.");
         if (_passwordHasher.VerifyHashedPassword(user, user.PasswordHash, dto.Password)==PasswordVerificationResult.Failed)
         {
@@ -50,6 +49,8 @@ public class AuthenticationService:IAuthenticationService
             signingCredentials:creds
         );
         var tokenString = new JwtSecurityTokenHandler().WriteToken(tokenOptions);
+        user.UserLastActiveDate=DateTime.Now;
+        await _context.SaveChangesAsync();
         return new AuthenticationResponseDto{Token=tokenString};
     }
 }
