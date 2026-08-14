@@ -2,6 +2,7 @@ import { api } from "../../shared/api.js";
 
 const params = new URLSearchParams(window.location.search);
 const formId = params.get('formId');
+const groupCode = params.get('groupCode');
 
 const formTitle = document.getElementById('form-title');
 const formSubtitle = document.getElementById('form-subtitle');
@@ -44,12 +45,25 @@ async function init() {
         if (!currentForm.viewName) {
             recordsTheadTr.parentElement.classList.add('d-none');
             showNoViewMessage();
-            btnAddRecord.classList.remove('d-none'); // View yoksa bile Ana Tabloya kayıt eklenebilir
+            
+            const perms = window.getUserPermissions(`/forms/${groupCode}/${formId}`);
+            if (perms.canCreate) {
+                btnAddRecord.classList.remove('d-none');
+            } else {
+                btnAddRecord.classList.add('d-none');
+            }
             return;
         }
 
         await loadRecords();
-        btnAddRecord.classList.remove('d-none');
+        
+        // Yetki kontrolü yap, canCreate yoksa Ekle butonunu gizle
+        const perms = window.getUserPermissions(`/forms/${groupCode}/${formId}`);
+        if (perms.canCreate) {
+            btnAddRecord.classList.remove('d-none');
+        } else {
+            btnAddRecord.classList.add('d-none');
+        }
     } catch (error) {
         console.error(error);
         showError("Form bilgileri yüklenemedi. " + (error.message || ""));

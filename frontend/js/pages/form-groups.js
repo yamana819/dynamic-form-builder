@@ -54,21 +54,31 @@ async function loadFormGroups() {
             return;
         }
 
-        // Admin ekranı olduğu için "Yeni Grup Ekle" butonunu direkt gösteriyoruz
-        btnAddGroup.classList.remove('d-none');
+        const perms = window.getUserPermissions('forms');
+        if (perms.canCreate) {
+            btnAddGroup.classList.remove('d-none');
+        } else {
+            btnAddGroup.classList.add('d-none');
+        }
 
         data.forEach(group => {
-            const actionButtons = `
+            let actionButtons = `
                 <button class="btn btn-sm btn-outline-primary me-2" onclick="openFormsModal('${group.formGroupCode}', '${group.formGroupName}')" title="Formları İncele">
                     <i class="bi bi-folder2-open"></i> Formlar
-                </button>
+                </button>`;
+            
+            if (perms.canEdit) {
+                actionButtons += `
                 <button class="btn btn-sm btn-outline-warning me-2" onclick="editGroup('${group.formGroupCode}')" title="Grubu Düzenle">
                     <i class="bi bi-pencil"></i>
-                </button>
+                </button>`;
+            }
+            if (perms.canDelete) {
+                actionButtons += `
                 <button class="btn btn-sm btn-outline-danger" onclick="deleteGroup('${group.formGroupCode}')" title="Grubu Sil">
                     <i class="bi bi-trash"></i>
-                </button>
-            `;
+                </button>`;
+            }
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
@@ -200,7 +210,12 @@ window.openFormsModal = async (formGroupCode, formGroupName) => {
         </tr>
     `;
     
-    btnAddForm.classList.remove('d-none');
+    const perms = window.getUserPermissions('forms');
+    if (perms.canCreate) {
+        btnAddForm.classList.remove('d-none');
+    } else {
+        btnAddForm.classList.add('d-none');
+    }
     formsModal.show();
 
     try {
@@ -222,19 +237,32 @@ window.openFormsModal = async (formGroupCode, formGroupName) => {
             const statusBadge = isPublished 
                 ? `<span class="badge bg-success">Yayında</span>`
                 : `<span class="badge bg-secondary">Taslak</span>`;
+                
             let publishButton = '';
-            if (!isPublished) {
-                publishButton = `
-                    <button class="btn btn-sm btn-outline-success me-1" onclick="publishForm('${formId}')" title="Yayınla">
-                        <i class="bi bi-cloud-arrow-up"></i>
-                    </button>
-                `;
-            } else {
-                publishButton = `
-                    <button class="btn btn-sm btn-outline-secondary me-1" onclick="unpublishForm('${formId}')" title="Yayından Kaldır">
-                        <i class="bi bi-cloud-arrow-down"></i>
-                    </button>
-                `;
+            if (perms.canEdit) {
+                if (!isPublished) {
+                    publishButton = `
+                        <button class="btn btn-sm btn-outline-success me-1" onclick="publishForm('${formId}')" title="Yayınla">
+                            <i class="bi bi-cloud-arrow-up"></i>
+                        </button>
+                    `;
+                } else {
+                    publishButton = `
+                        <button class="btn btn-sm btn-outline-secondary me-1" onclick="unpublishForm('${formId}')" title="Yayından Kaldır">
+                            <i class="bi bi-cloud-arrow-down"></i>
+                        </button>
+                    `;
+                }
+            }
+
+            let editBtn = '';
+            if (perms.canEdit) {
+                editBtn = `<a href="/frontend/pages/forms/design.html?formId=${formId}" class="btn btn-sm btn-outline-warning me-1" title="Düzenle"><i class="bi bi-pencil"></i></a>`;
+            }
+            
+            let deleteBtn = '';
+            if (perms.canDelete) {
+                deleteBtn = `<button class="btn btn-sm btn-outline-danger" onclick="deleteForm('${formId}')" title="Sil"><i class="bi bi-trash"></i></button>`;
             }
 
             const tr = document.createElement('tr');
@@ -244,12 +272,8 @@ window.openFormsModal = async (formGroupCode, formGroupName) => {
                 <td>${createdAt}</td>
                 <td class="text-end pe-4">
                     ${publishButton}
-                    <a href="/frontend/pages/forms/design.html?formId=${formId}" class="btn btn-sm btn-outline-warning me-1" title="Düzenle">
-                        <i class="bi bi-pencil"></i>
-                    </a>
-                    <button class="btn btn-sm btn-outline-danger" onclick="deleteForm('${formId}')" title="Sil">
-                        <i class="bi bi-trash"></i>
-                    </button>
+                    ${editBtn}
+                    ${deleteBtn}
                 </td>
             `;
             formsTbody.appendChild(tr);

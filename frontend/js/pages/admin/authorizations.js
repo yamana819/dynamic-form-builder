@@ -29,27 +29,45 @@ async function loadRoles() {
             return;
         }
 
+        const perms = window.getUserPermissions('/admin/authorizations');
+        if (perms.canCreate) {
+            btnAddRole.classList.remove('d-none');
+        } else {
+            btnAddRole.classList.add('d-none');
+        }
+
         roles.forEach(role => {
             const isAdmin = role.roleName.toLowerCase() === 'admin' || role.roleId === 1;
             
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td class="text-muted fw-bold">#${role.roleId}</td>
-                <td class="fw-bold">${role.roleName}</td>
-                <td class="text-end">
-                    ${isAdmin ? `
-                        <span class="text-muted small fst-italic">Değiştirilemez</span>
-                    ` : `
+            let actionButtons = '';
+            if (isAdmin) {
+                actionButtons = `<span class="text-muted small fst-italic">Değiştirilemez</span>`;
+            } else {
+                if (perms.canEdit) {
+                    actionButtons += `
                         <button class="btn btn-sm btn-outline-warning btn-edit-role me-2" data-id="${role.roleId}" data-name="${role.roleName}" title="Rol İsmini Düzenle">
                             <i class="bi bi-pencil"></i>
                         </button>
                         <button class="btn btn-sm btn-outline-primary btn-edit-auth me-2" data-id="${role.roleId}" data-name="${role.roleName}" title="Yetkileri Yönet">
                             <i class="bi bi-shield-lock"></i> Yetkiler
                         </button>
+                    `;
+                }
+                if (perms.canDelete) {
+                    actionButtons += `
                         <button class="btn btn-sm btn-outline-danger btn-delete-role" data-id="${role.roleId}" title="Rolü Sil">
                             <i class="bi bi-trash"></i>
                         </button>
-                    `}
+                    `;
+                }
+            }
+            
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="text-muted fw-bold">#${role.roleId}</td>
+                <td class="fw-bold">${role.roleName}</td>
+                <td class="text-end">
+                    ${actionButtons}
                 </td>
             `;
             rolesTbody.appendChild(tr);

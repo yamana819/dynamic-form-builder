@@ -18,6 +18,7 @@ const btnConfirmDelete = document.getElementById('btn-confirm-delete');
 let currentForm = null;
 let parsedSchemaObj = {};
 let formioInstance = null;
+let formPermissions = { canView: false, canCreate: false, canEdit: false, canDelete: false };
 
 const pageLoader = document.getElementById('page-loader');
 const loaderText = document.getElementById('loader-text');
@@ -35,11 +36,19 @@ async function init() {
         currentForm = await api.get(`/Form/${formId}`);
         pageSubtitle.textContent = `Form: ${currentForm.formName}`;
         parsedSchemaObj = JSON.parse(currentForm.formSchema || "{}");
+        
+        formPermissions = window.getUserPermissions(`/forms/${currentForm.formGroupCode}/${formId}`);
 
         if (recordId) {
             // Düzenleme Modu
-            pageTitle.textContent = "Kaydı Düzenle";
-            btnDeleteRecord.classList.remove('d-none');
+            pageTitle.textContent = "Kaydı Görüntüle / Düzenle";
+            
+            if (formPermissions.canDelete) {
+                btnDeleteRecord.classList.remove('d-none');
+            } else {
+                btnDeleteRecord.classList.add('d-none');
+            }
+            
             loaderText.textContent = "Veritabanından Kayıt Çekiliyor...";
             
             // Backend'den en taze kaydı çek
@@ -70,11 +79,23 @@ async function renderDynamicForm(recordData = null) {
         formioInstance.destroy(); 
     }
 
+    let isReadOnly = false;
+    if (recordId && !formPermissions.canEdit) {
+        isReadOnly = true;
+        btnSaveRecord.classList.add('d-none'); // Kaydet butonunu gizle
+    } else if (!recordId && !formPermissions.canCreate) {
+        isReadOnly = true;
+        btnSaveRecord.classList.add('d-none');
+    } else {
+        btnSaveRecord.classList.remove('d-none');
+    }
+
     try {
         dynamicFormContainer.innerHTML = '';
         formioInstance = await Formio.createForm(dynamicFormContainer, parsedSchemaObj, {
             language: 'tr',
-            noAlerts: true 
+            noAlerts: true,
+            readOnly: isReadOnly
         });
 
         if (recordData) {
