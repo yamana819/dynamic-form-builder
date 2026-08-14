@@ -8,7 +8,7 @@ Beyond dynamic table generation, the project ships with a robust **Role-Based Ac
 
 ## 🚀 Core Features
 
-* **Dynamic Schema Validation & Binding:** Admins visually design forms and link them to existing database tables. Upon publishing, the backend's `SchemaService` rigorously validates the target SQL Server Tables and Views against the form's JSON schema. If validated, the custom `SqlHelper` service uses ADO.NET to seamlessly execute dynamic inserts, updates, and reads without requiring hardcoded EF Core entities.
+* **Dynamic Schema Validation & Binding:** Admins visually design forms and link them to existing database tables. Upon publishing, the backend's `SchemaService` rigorously validates the target SQL Server Tables and Views against the form's JSON schema. If validated, the custom `SqlHelper` service seamlessly executes dynamic inserts, updates, and reads. All dynamic queries are heavily fortified against **SQL Injection** using strict identifier sanitization (Regex) and parameterized SQL commands.
 * **Advanced RBAC (Role-Based Access Control):** Granular permissions (`CanView`, `CanCreate`, `CanEdit`, `CanDelete`) can be assigned to different roles. Every API endpoint enforcing these permissions utilizes custom ASP.NET Core Action Filters (`[RequirePermission]`).
 * **Dynamic Sidebar Menus:** The frontend navigation is fully database-driven. Menus are retrieved based on the user's role and rendered recursively, guaranteeing a secure and clean UI.
 * **Global Error & Exception Handling:** A highly polished exception handling architecture utilizing ASP.NET Core Middleware intercepts custom exceptions (`ResourceNotFoundException`, `ConflictException`, `BadRequestException`) and translates them into standard HTTP Problem Details, which are seamlessly parsed and displayed by SweetAlert2 on the frontend.
@@ -31,7 +31,7 @@ Built on **.NET 10** and **Entity Framework Core**, this layer acts as the brain
 
 * **`Controllers/`**: Contains API Endpoints handling HTTP requests. Responsible for request routing, authorization attributes, and returning standardized HTTP responses (e.g., `UserController`, `FormController`, `MenuController`).
 * **`Services/`**: The core Business Logic Layer. Contains the services that execute the heavy lifting, separating business rules from the controllers (e.g., `UserService`, `FormService`, `RecordService`).
-* **`Data/`**: Contains the Entity Framework Core `DbContext` (`DynamicFormBuilderDbContext`) and the heavily customized `SqlHelper` class responsible for raw ADO.NET dynamic DML (Data Manipulation Language) executions and secure CRUD operations against pre-existing tables.
+* **`Data/`**: Contains the Entity Framework Core `DbContext` (`DynamicFormBuilderDbContext`) and the heavily customized `SqlHelper` class. The `SqlHelper` is responsible for raw ADO.NET dynamic DML executions and secure CRUD operations, employing rigorous **SQL Injection protections** (`SanitizeIdentifier`) and `SqlParameter` bindings for all dynamic queries.
 * **`Models/`**: The Domain Entities mapped to the database tables via EF Core (e.g., `User`, `Role`, `Form`, `Menu`).
 * **`DTOs/`**: Data Transfer Objects used to shape data entering and leaving the API, ensuring sensitive domain models are never exposed directly to the client. Includes strict validation attributes.
 * **`Exceptions/`**: Custom Exception classes (e.g., `ConflictException`) tailored to specific business logic failures, allowing semantic error throwing throughout the application.
