@@ -2,13 +2,13 @@
 
 **Dynamic Form Builder** is a comprehensive, scalable, and highly adaptable web application that allows system administrators to dynamically create forms and manage data structures without writing a single line of code. 
 
-By leveraging a powerful `.NET 10` backend and a decoupled `Vanilla JavaScript` frontend, the system interprets admin-defined form schemas (text fields, numbers, dates, etc.) and translates them into physical database tables and views on the fly. This architecture ensures maximum performance, strict data integrity, and complete isolation of form records.
+By leveraging a powerful `.NET 10` backend and a decoupled `Vanilla JavaScript` frontend, the system interprets admin-defined form schemas (text fields, numbers, dates, etc.) and dynamically maps them to **pre-existing** physical database tables and views. Before a form is published, the backend strictly validates that the target SQL Table, Primary Key, and View perfectly match the defined schema. Once validated, it performs dynamic, highly secure ADO.NET CRUD operations on these structures. This architecture ensures maximum performance, strict data integrity, and complete isolation of form records without the risks of dynamic DDL (CREATE TABLE) executions.
 
 Beyond dynamic table generation, the project ships with a robust **Role-Based Access Control (RBAC)** system. Menus, form groups, and individual forms can be heavily restricted. A custom-built dynamic sidebar engine ensures users only see what they are authorized to see, securely validated by a robust JWT-based authorization pipeline.
 
 ## 🚀 Core Features
 
-* **Dynamic Schema & Table Generation:** Admins can visually design forms. Upon publishing, the backend's custom `SqlHelper` service uses ADO.NET to automatically provision dedicated SQL Server Tables and Views tailored precisely to the form's schema.
+* **Dynamic Schema Validation & Binding:** Admins visually design forms and link them to existing database tables. Upon publishing, the backend's `SchemaService` rigorously validates the target SQL Server Tables and Views against the form's JSON schema. If validated, the custom `SqlHelper` service uses ADO.NET to seamlessly execute dynamic inserts, updates, and reads without requiring hardcoded EF Core entities.
 * **Advanced RBAC (Role-Based Access Control):** Granular permissions (`CanView`, `CanCreate`, `CanEdit`, `CanDelete`) can be assigned to different roles. Every API endpoint enforcing these permissions utilizes custom ASP.NET Core Action Filters (`[RequirePermission]`).
 * **Dynamic Sidebar Menus:** The frontend navigation is fully database-driven. Menus are retrieved based on the user's role and rendered recursively, guaranteeing a secure and clean UI.
 * **Global Error & Exception Handling:** A highly polished exception handling architecture utilizing ASP.NET Core Middleware intercepts custom exceptions (`ResourceNotFoundException`, `ConflictException`, `BadRequestException`) and translates them into standard HTTP Problem Details, which are seamlessly parsed and displayed by SweetAlert2 on the frontend.
