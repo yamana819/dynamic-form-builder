@@ -43,3 +43,23 @@ GO
 INSERT INTO [authorization] (menu_id,role_id,can_create,can_delete,can_edit,can_view)
 VALUES (3,2,1,1,1,1);
 GO
+
+UPDATE [menu]
+SET menu_name='Yetki Kontrol Paneli'
+WHERE menu_name='Yetki Kontrolü Ekranı';
+GO
+
+
+UPDATE [menu]
+SET menu_name='Kullanici Yönetim Paneli'
+WHERE menu_name='Admin Kullanıcı Paneli';
+GO
+
+DELETE  
+FROM [menu]
+WHERE menu_name='Rol Yönetim Paneli';
+GO
+
+SELECT * 
+FROM [menu]
+WHERE menu_name='Yetki Kontrol Paneli';
