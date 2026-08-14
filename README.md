@@ -31,7 +31,7 @@ Built on **.NET 10** and **Entity Framework Core**, this layer acts as the brain
 
 * **`Controllers/`**: Contains API Endpoints handling HTTP requests. Responsible for request routing, authorization attributes, and returning standardized HTTP responses (e.g., `UserController`, `FormController`, `MenuController`).
 * **`Services/`**: The core Business Logic Layer. Contains the services that execute the heavy lifting, separating business rules from the controllers (e.g., `UserService`, `FormService`, `RecordService`).
-* **`Data/`**: Contains the Entity Framework Core `DbContext` (`DynamicFormBuilderDbContext`) and the heavily customized `SqlHelper` class responsible for raw ADO.NET dynamic table generation and DDL/DML executions.
+* **`Data/`**: Contains the Entity Framework Core `DbContext` (`DynamicFormBuilderDbContext`) and the heavily customized `SqlHelper` class responsible for raw ADO.NET dynamic DML (Data Manipulation Language) executions and secure CRUD operations against pre-existing tables.
 * **`Models/`**: The Domain Entities mapped to the database tables via EF Core (e.g., `User`, `Role`, `Form`, `Menu`).
 * **`DTOs/`**: Data Transfer Objects used to shape data entering and leaving the API, ensuring sensitive domain models are never exposed directly to the client. Includes strict validation attributes.
 * **`Exceptions/`**: Custom Exception classes (e.g., `ConflictException`) tailored to specific business logic failures, allowing semantic error throwing throughout the application.
