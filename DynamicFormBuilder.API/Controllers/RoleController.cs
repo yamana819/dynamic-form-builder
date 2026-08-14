@@ -19,35 +19,35 @@ namespace DynamicFormBuilder.API.Controllers
             _roleService=roleService;
         }
         [HttpGet]
-        [RequirePermission("/admin/roles",PermissionType.CanView)]
+        [RequirePermission("/admin/authorizations",PermissionType.CanView)]
         public async Task<IActionResult> GetAllRoles([FromQuery] int pageNumber=1,[FromQuery] int pageSize=50)
         {
             IEnumerable<RoleResponseDto> roles = await _roleService.GetAllRolesAsync(pageNumber,pageSize);
             return Ok(roles);
         }
         [HttpGet("{id}")]
-        [RequirePermission("/admin/roles",PermissionType.CanView)]
+        [RequirePermission("/admin/authorizations",PermissionType.CanView)]
         public async Task<IActionResult> GetRoleAsync(byte id)
         {
             RoleResponseDto role = await _roleService.GetRoleAsync(id);
             return Ok(role);
         }
         [HttpPost]
-        [RequirePermission("/admin/roles",PermissionType.CanCreate)]
+        [RequirePermission("/admin/authorizations",PermissionType.CanCreate)]
         public async Task<IActionResult> CreateRoleAsync(RoleCreateDto dto)
         {
             RoleResponseDto role = await _roleService.CreateRoleAsync(dto);
             return StatusCode(201,role);
         }
         [HttpPatch("{id}")]
-        [RequirePermission("/admin/roles",PermissionType.CanEdit)]
+        [RequirePermission("/admin/authorizations",PermissionType.CanEdit)]
         public async Task<IActionResult> UpdateRoleAsync(byte id,RoleUpdateDto dto)
         {
             RoleResponseDto role = await _roleService.UpdateRoleAsync(id,dto);
             return Ok(role);
         }
         [HttpDelete("{id}")]
-        [RequirePermission("/admin/roles",PermissionType.CanDelete)]
+        [RequirePermission("/admin/authorizations",PermissionType.CanDelete)]
         public async Task<IActionResult> DeleteRoleAsync(byte id)
         {
             await _roleService.DeleteRoleAsync(id);
