@@ -21,26 +21,11 @@ async function request(endpoint, options = {}) {
   };
   try {
     const response = await fetch(url, config);
-    if ((response.status === 401)) {
-      removeToken();
-      sessionStorage.clear();
-      
-      // Eğer zaten login isteği yapıyorsak (şifre yanlışsa), sayfayı yenileme.
-      if (!endpoint.toLowerCase().includes('login')) {
-          window.location.href="/frontend/pages/login.html";
-          throw new Error("Oturum süreniz doldu.");
-      }
-    }
-    if ((response.status === 403)) {
-      localStorage.removeItem('user_menus');
-      sessionStorage.removeItem('user_menus');
-      alert("Yetkileriniz güncellenmiş sayfa yenileniyor...");
-      window.location.reload();
-      throw new Error("Forbidden:Bu işlem için yetkiniz yok.");
-    }
-    if ((response.status === 204)) {
+    
+    if (response.status === 204) {
       return null;
     }
+    
     let data = null;
     const text = await response.text();
     if (text) {
@@ -50,11 +35,41 @@ async function request(endpoint, options = {}) {
         data = null; 
       }
     }
-    if (!response.ok) {
-      let errorMsg = data?.message || `HTTP ${response.status} hatası`;
-      if (data?.errors && Array.isArray(data.errors) && data.errors.length > 0) {
+
+    let errorMsg = data?.message || `HTTP ${response.status} hatası`;
+    
+    if (data?.errors) {
+      if (typeof data.errors === 'object' && !Array.isArray(data.errors)) {
+        // ASP.NET Core ProblemDetails format: errors: { FieldName: ["Error 1", "Error 2"] }
+        const messages = [];
+        for (const key in data.errors) {
+          if (Array.isArray(data.errors[key])) {
+            messages.push(...data.errors[key]);
+          } else {
+            messages.push(data.errors[key]);
+          }
+        }
+        if (messages.length > 0) errorMsg = messages.join('<br>');
+      } else if (Array.isArray(data.errors) && data.errors.length > 0) {
+        // Normal string array format
         errorMsg = data.errors.join('<br>');
       }
+    }
+
+    if ((response.status === 401) || (response.status === 403)) {
+      removeToken();
+      sessionStorage.clear();
+      localStorage.clear();
+      
+      if (!endpoint.toLowerCase().includes('login')) {
+          const alertMsg = data?.message ? data.message : "Oturum süreniz doldu veya yetkileriniz güncellendi. Güvenliğiniz için lütfen tekrar giriş yapın.";
+          alert(alertMsg);
+          window.location.href = "/frontend/pages/login.html";
+      }
+      throw new Error(errorMsg);
+    }
+    
+    if (!response.ok) {
       throw new Error(errorMsg);
     }
     return data;

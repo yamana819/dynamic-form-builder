@@ -105,4 +105,40 @@ async function initLayout() {
     document.body.classList.add('loaded');
 }
 window.refreshSidebarMenu = renderLayoutData;
+
+window.getUserPermissions = function(hrefSubstring) {
+    const defaultPerms = { canView: false, canCreate: false, canEdit: false, canDelete: false };
+    const storedMenus = sessionStorage.getItem('user_menus') || localStorage.getItem('user_menus');
+    if (!storedMenus) return defaultPerms;
+
+    try {
+        const menus = JSON.parse(storedMenus);
+        function findMenu(menuList) {
+            for (const menu of menuList) {
+                if (menu.href && menu.href.toLowerCase().includes(hrefSubstring.toLowerCase())) {
+                    return menu;
+                }
+                if (menu.subMenus && menu.subMenus.length > 0) {
+                    const found = findMenu(menu.subMenus);
+                    if (found) return found;
+                }
+            }
+            return null;
+        }
+
+        const foundMenu = findMenu(menus);
+        if (foundMenu) {
+            return {
+                canView: foundMenu.canView === true,
+                canCreate: foundMenu.canCreate === true,
+                canEdit: foundMenu.canEdit === true,
+                canDelete: foundMenu.canDelete === true
+            };
+        }
+    } catch (e) {
+        console.error("Yetki parse hatası:", e);
+    }
+    return defaultPerms;
+};
+
 initLayout();
